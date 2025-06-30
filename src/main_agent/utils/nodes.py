@@ -120,5 +120,5 @@ def no_tools_warning(state: MainAgentState, config: RunnableConfig) -> Dict[str,
 
 __all__ = [
     "welcome", "finish_interrupt", "agent_execution", 
-    "should_tool", "no_tools_warning", "tool_result_transport"
+    "should_tool", "no_tools_warning", "tool_result_transport", "ask_interrupt"
 ]
