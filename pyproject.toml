@@ -11,6 +11,7 @@ readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.9"
 dependencies = [
+    "aiopath>=0.5.6",
     "langchain[openai]>=0.3.26",
     "langgraph>=0.2.6",
     "langgraph-sdk>=0.1.72",
@@ -28,8 +29,8 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 packages = ["langgraph.templates.agent", "agent"]
 [tool.setuptools.package-dir]
-"langgraph.templates.agent" = "src/agent"
-"agent" = "src/agent"
+"langgraph.templates.agent" = "src/main_agent"
+"agent" = "src/main_agent"
 
 
 [tool.setuptools.package-data]

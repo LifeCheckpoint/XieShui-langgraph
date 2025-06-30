@@ -10,7 +10,7 @@ from langgraph.types import interrupt
 from langchain_openai import ChatOpenAI
 from langchain_core.runnables import RunnableConfig
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
-from pathlib import Path
+from aiopath import AsyncPath
 from typing import Any, Dict
 
 from src.main_agent.utils.state import MainAgentState
@@ -21,23 +21,13 @@ async def welcome(state: MainAgentState, config: RunnableConfig) -> Dict[str, An
     欢迎节点，在该节点中注入系统提示词与欢迎信息
     """
     # 读取提示词
-    system_prompt_path = Path(__file__).parent / "instruction.txt"
-    
-    if not system_prompt_path.exists():
-        # TODO error node
-        pass
+    system_prompt_path: AsyncPath = AsyncPath(__file__).parent / "instruction.txt"
+    system_prompt = (await system_prompt_path.read_text(encoding="utf-8")).strip()
 
-    try:
-        system_prompt = system_prompt_path.read_text(encoding="utf-8")
-
-        # 替换模板
-        system_prompt = system_prompt.format_map({
-            "user_instruction": config.get("configurable", {}).extra_system_prompt,
-        })
-
-    except Exception as e:
-        # TODO error node
-        pass
+    # 替换模板
+    system_prompt = system_prompt.format_map({
+        "user_instruction": config.get("configurable", {}).extra_system_prompt,
+    })
 
     # 注入系统提示词
     return {"messages": [SystemMessage(content=system_prompt)]}
@@ -59,7 +49,7 @@ async def agent_execution(state: MainAgentState, config: RunnableConfig) -> Dict
         model="google/gemini-2.5-flash",
         temperature=0.55,
         base_url="https://openrouter.ai/api/v1",
-        api_key=(Path(__file__).parent / "api_key").read_text(encoding="utf-8").strip(),
+        api_key=(await (AsyncPath(__file__).parent / "api_key").read_text(encoding="utf-8")).strip(),
         max_retries=3,
         max_tokens=8192,
     ) # TODO: 更灵活的模型配置
