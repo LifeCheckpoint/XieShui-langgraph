@@ -51,7 +51,7 @@ async def ask_interrupt(state: MainAgentState, config: RunnableConfig) -> Dict[s
             break
 
     user_input = interrupt(question_and_choices)
-    return {"messages": [HumanMessage(content=user_input)]}
+    return {"messages": [HumanMessage(content="用户回答：" + user_input)]}
 
 async def agent_execution(state: MainAgentState, config: RunnableConfig) -> Dict[str, Any]:
     """
