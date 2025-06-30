@@ -1,5 +1,4 @@
 from pydantic import BaseModel, Field
-from langgraph.prebuilt import ToolNode
 from langchain_core.tools import tool
 
 class AttemptCompletionSchema(BaseModel):
@@ -12,8 +11,3 @@ class AttemptCompletionSchema(BaseModel):
 @tool("attempt_completion", args_schema=AttemptCompletionSchema)
 def attempt_completion(status: str, reason: str) -> str:
     return f"任务状态: {status}\n\n完成情况: {reason}"
-
-tool_list = [attempt_completion]
-tools = ToolNode(tool_list)
-
-__all__ = ["tool_list", "tools"]
