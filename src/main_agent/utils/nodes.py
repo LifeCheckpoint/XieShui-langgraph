@@ -22,12 +22,10 @@ async def welcome(state: MainAgentState, config: RunnableConfig) -> Dict[str, An
     """
     # 读取提示词
     system_prompt_path: AsyncPath = AsyncPath(__file__).parent / "instruction.txt"
-    system_prompt = (await system_prompt_path.read_text(encoding="utf-8")).strip()
+    system_prompt: str = (await system_prompt_path.read_text(encoding="utf-8")).strip()
 
     # 替换模板
-    system_prompt = system_prompt.format_map({
-        "user_instruction": config.get("configurable", {}).extra_system_prompt,
-    })
+    system_prompt = system_prompt.replace("<<user_instruction>>", config.get("configurable", {}).get("extra_system_prompt", ""))
 
     # 注入系统提示词
     return {"messages": [SystemMessage(content=system_prompt)]}
@@ -54,7 +52,7 @@ async def agent_execution(state: MainAgentState, config: RunnableConfig) -> Dict
         max_tokens=8192,
     ) # TODO: 更灵活的模型配置
     
-    response = llm.invoke(state["messages"])
+    response = llm.invoke(state.messages)
     return {"messages": [AIMessage(content=response.content)]}
 
 

@@ -27,5 +27,5 @@
 ## 用户自定义指令
 优先遵循以下用户指令（不与使用指南冲突时）：
 - 语言偏好：始终使用简体中文（zh-CN），除非用户另有要求
-{ user_instruction }
+<<user_instruction>>
 </user>
