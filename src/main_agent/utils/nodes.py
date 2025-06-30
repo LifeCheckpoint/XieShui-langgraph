@@ -68,7 +68,7 @@ async def agent_execution(state: MainAgentState, config: RunnableConfig) -> Dict
     return {"messages": [AIMessage(content=response.content)]}
 
 
-def should_tool(state: MainAgentState):
+def should_tool(state: MainAgentState, config: RunnableConfig) -> str:
     """
     检查是否需要调用工具，如果最后一条消息：
     - 包含工具调用，则返回 "tools" 表示进入工具节点
@@ -79,6 +79,19 @@ def should_tool(state: MainAgentState):
     if last_message.tool_calls:
         return "tools"
     return "no_tools_warning"
+
+
+def should_finish(state: MainAgentState, config: RunnableConfig) -> str:
+    """
+    检查是否需要结束任务，如果最后一条消息：
+    - 包含 `attempt_completion` 工具调用，则返回 "finish_interrupt" 进入中断节点
+    - 否则返回 "agent_execution" 表示进入 Agent 执行节点
+    """
+    messages = state["messages"]
+    last_message = messages[-1]
+    if last_message.tool_calls and last_message.tool_calls[0].name == "attempt_completion":
+        return "finish_interrupt"
+    return "agent_execution"
 
 
 def no_tools_warning(state: MainAgentState, config: RunnableConfig) -> Dict[str, Any]:
@@ -92,5 +105,5 @@ def no_tools_warning(state: MainAgentState, config: RunnableConfig) -> Dict[str,
 
 __all__ = [
     "welcome", "finish_interrupt", "agent_execution", 
-    "should_tool", "no_tools_warning",
+    "should_tool", "no_tools_warning", "should_finish"
 ]
