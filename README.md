@@ -30,7 +30,7 @@
 ## 启动项目服务器
 
 ```shell
-uv run langgraph dev
+uv run langgraph dev --allow-blocking
 ```
 
 浏览器将打开 `LangGraph Studio`
