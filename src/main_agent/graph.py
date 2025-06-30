@@ -21,6 +21,7 @@ from src.main_agent.utils import (
     should_tool,
     no_tools_warning,
     should_finish,
+    tools,
 )
 
 
@@ -33,13 +34,14 @@ builder.add_node("agent_execution", agent_execution)
 builder.add_node("should_tool", should_tool)
 builder.add_node("no_tools_warning", no_tools_warning)
 builder.add_node("should_finish", should_finish)
+builder.add_node("tools", tools)
 
 # 添加边
 builder.add_edge(START, "welcome")
 builder.add_edge("welcome", "finish_interrupt")
 builder.add_edge("finish_interrupt", "agent_execution")
-builder.add_conditional_edges("agent_execution", "should_tool", ["tools", "no_tools_warning"])
-builder.add_conditional_edges("tools", "should_finish", ["finish_interrupt", "agent_execution"])
+builder.add_conditional_edges("agent_execution", should_tool) # "tools", "no_tools_warning"
+builder.add_conditional_edges("tools", should_finish) # "finish_interrupt", "agent_execution"
 builder.add_edge("no_tools_warning", "agent_execution")
 
 # 编译
