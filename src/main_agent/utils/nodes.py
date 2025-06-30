@@ -52,7 +52,7 @@ async def agent_execution(state: MainAgentState, config: RunnableConfig) -> Dict
         max_tokens=8192,
     ) # TODO: 更灵活的模型配置
     
-    response = llm.invoke(state.messages)
+    response = await llm.ainvoke(state.messages)
     return {"messages": [AIMessage(content=response.content)]}
 
 
@@ -62,7 +62,7 @@ def should_tool(state: MainAgentState, config: RunnableConfig) -> str:
     - 包含工具调用，则返回 "tools" 表示进入工具节点
     - 否则返回 "no_tools_warning" 进入工具未调用警告节点
     """
-    messages = state["messages"]
+    messages = state.messages
     last_message = messages[-1]
     if last_message.tool_calls:
         return "tools"
@@ -75,7 +75,7 @@ def should_finish(state: MainAgentState, config: RunnableConfig) -> str:
     - 包含 `attempt_completion` 工具调用，则返回 "finish_interrupt" 进入中断节点
     - 否则返回 "agent_execution" 表示进入 Agent 执行节点
     """
-    messages = state["messages"]
+    messages = state.messages
     last_message = messages[-1]
     if last_message.tool_calls and last_message.tool_calls[0].name == "attempt_completion":
         return "finish_interrupt"
