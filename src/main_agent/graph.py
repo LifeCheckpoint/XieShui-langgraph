@@ -4,23 +4,15 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Dict, TypedDict
+from typing import Any, Dict
 
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph
 
-from utils import MainAgentState
-
-class Configuration(TypedDict):
-    """Configurable parameters for the agent.
-
-    Set these when creating assistants OR when invoking the graph.
-    See: https://langchain-ai.github.io/langgraph/cloud/how-tos/configuration_cloud/
-    """
-
-    my_configurable_param: str
-
+from utils import (
+    MainAgentState,
+    Configuration,
+)
 
 async def call_model(state: MainAgentState, config: RunnableConfig) -> Dict[str, Any]:
     """Process input and returns output.
