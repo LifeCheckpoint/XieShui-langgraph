@@ -7,7 +7,7 @@ from __future__ import annotations
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph, START, END
 
-from utils import (
+from src.main_agent.utils import (
     # state
     MainAgentState,
 
@@ -44,3 +44,5 @@ builder.add_edge("no_tools_warning", "agent_execution")
 
 # 编译
 builder.compile(name="XieshuiMainAgent", checkpointer=MemorySaver())
+
+__all__ = ["builder"]

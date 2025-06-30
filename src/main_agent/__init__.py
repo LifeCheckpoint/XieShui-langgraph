@@ -2,6 +2,6 @@
 榭水的主 Agent 导入
 """
 
-from main_agent.graph import graph
+from src.main_agent.graph import builder as graph
 
 __all__ = ["graph"]

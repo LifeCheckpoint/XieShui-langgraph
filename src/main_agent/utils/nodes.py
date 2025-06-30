@@ -13,7 +13,7 @@ from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from pathlib import Path
 from typing import Any, Dict
 
-from state import MainAgentState
+from src.main_agent.utils.state import MainAgentState
 
 
 async def welcome(state: MainAgentState, config: RunnableConfig) -> Dict[str, Any]:
