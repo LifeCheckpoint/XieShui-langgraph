@@ -7,8 +7,9 @@ Agent 将在这些节点之间进行切换，处理任务
 from __future__ import annotations
 
 from langgraph.types import interrupt
+from langchain_openai import ChatOpenAI
 from langchain_core.runnables import RunnableConfig
-from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from pathlib import Path
 from typing import Any, Dict
 
@@ -50,3 +51,20 @@ async def finish_interrupt(state: MainAgentState, config: RunnableConfig) -> Dic
     return {"messages": [HumanMessage(content=next_input)]}
 
 __all__ = ["welcome"]
+
+
+async def agent_execution(state: MainAgentState, config: RunnableConfig) -> Dict[str, Any]:
+    """
+    Agent 执行节点，处理用户输入并执行任务
+    """
+    llm = ChatOpenAI(
+        model="google/gemini-2.5-flash",
+        temperature=0.55,
+        base_url="https://openrouter.ai/api/v1",
+        api_key=(Path(__file__).parent / "api_key").read_text(encoding="utf-8").strip(),
+        max_retries=3,
+        max_tokens=8192,
+    ) # TODO: 更灵活的模型配置
+    
+    response = llm.invoke(state["messages"])
+    return {"messages": [AIMessage(content=response.content)]}
