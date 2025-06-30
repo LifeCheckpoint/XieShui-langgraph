@@ -2,8 +2,9 @@ from langgraph.prebuilt import ToolNode
 
 from src.main_agent.utils.tools.attempt_completion import attempt_completion
 from src.main_agent.utils.tools.ask_question import ask_question
+from src.main_agent.utils.tools.python_eval import python_eval
 
-tool_list = [attempt_completion, ask_question]
+tool_list = [attempt_completion, ask_question, python_eval]
 """
 工具列表，包含了所有可用的工具函数
 """
