@@ -13,8 +13,8 @@ class MainAgentState(BaseModel):
     """
     Agent 状态模型
     """
-    messages: Annotated[List[AnyMessage], add_messages] = Field(description="Agent 消息列表，包含交互历史，储存和传递对话内容")
-    current_user_info: dict = Field(description="当前用户信息，包含用户的基本信息和偏好设置")
-    agent_mode: str = Field(description="Agent 模式，指示当前的工作模式或任务类型", examples=["ddefault", "research", "execution"])
+    messages: Annotated[List[AnyMessage], add_messages] = Field(default=[], description="Agent 消息列表，包含交互历史，储存和传递对话内容")
+    current_user_info: dict = Field(default={}, description="当前用户信息，包含用户的基本信息和偏好设置")
+    agent_mode: str = Field(default="default", description="Agent 模式，指示当前的工作模式或任务类型", examples=["default", "research", "execution"])
 
 __all__ = ["MainAgentState"]
