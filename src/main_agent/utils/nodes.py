@@ -6,8 +6,9 @@ Agent 将在这些节点之间进行切换，处理任务
 
 from __future__ import annotations
 
+from langgraph.types import interrupt
 from langchain_core.runnables import RunnableConfig
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import SystemMessage, HumanMessage
 from pathlib import Path
 from typing import Any, Dict
 
@@ -39,5 +40,13 @@ async def welcome(state: MainAgentState, config: RunnableConfig) -> Dict[str, An
 
     # 注入系统提示词
     return {"messages": [SystemMessage(content=system_prompt)]}
+
+
+async def finish_interrupt(state: MainAgentState, config: RunnableConfig) -> Dict[str, Any]:
+    """
+    暂停 Agent 运行，直到用户发起下一次对话
+    """
+    next_input = interrupt("向我对话以继续...")
+    return {"messages": [HumanMessage(content=next_input)]}
 
 __all__ = ["welcome"]
