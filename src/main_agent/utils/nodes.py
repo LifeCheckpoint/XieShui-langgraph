@@ -68,4 +68,29 @@ async def agent_execution(state: MainAgentState, config: RunnableConfig) -> Dict
     return {"messages": [AIMessage(content=response.content)]}
 
 
-__all__ = ["welcome", "finish_interrupt", "agent_execution"]
+def should_tool(state: MainAgentState):
+    """
+    检查是否需要调用工具，如果最后一条消息：
+    - 包含工具调用，则返回 "tools" 表示进入工具节点
+    - 否则返回 "no_tools_warning" 进入工具未调用警告节点
+    """
+    messages = state["messages"]
+    last_message = messages[-1]
+    if last_message.tool_calls:
+        return "tools"
+    return "no_tools_warning"
+
+
+def no_tools_warning(state: MainAgentState, config: RunnableConfig) -> Dict[str, Any]:
+    """
+    工具未调用警告节点，提示 Agent 没有调用工具
+    """
+    return {"messages": [HumanMessage(
+        content="目前没有调用任何工具，请检查你需要调用什么工具。如果你认为当前任务已经结束，则使用 `attempt_completion` 工具向系统确认该次任务完成"
+    )]}
+
+
+__all__ = [
+    "welcome", "finish_interrupt", "agent_execution", 
+    "should_tool", "no_tools_warning",
+]
