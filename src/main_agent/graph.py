@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph, START, END
 
 from utils import (
@@ -27,4 +28,4 @@ builder.add_node("welcome", welcome)
 builder.add_edge(START, "welcome")
 
 # 编译
-builder.compile(name="XieshuiMainAgent")
+builder.compile(name="XieshuiMainAgent", checkpointer=MemorySaver())
