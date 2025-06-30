@@ -50,8 +50,6 @@ async def finish_interrupt(state: MainAgentState, config: RunnableConfig) -> Dic
     next_input = interrupt("向我对话以继续...")
     return {"messages": [HumanMessage(content=next_input)]}
 
-__all__ = ["welcome"]
-
 
 async def agent_execution(state: MainAgentState, config: RunnableConfig) -> Dict[str, Any]:
     """
@@ -68,3 +66,6 @@ async def agent_execution(state: MainAgentState, config: RunnableConfig) -> Dict
     
     response = llm.invoke(state["messages"])
     return {"messages": [AIMessage(content=response.content)]}
+
+
+__all__ = ["welcome", "finish_interrupt", "agent_execution"]
