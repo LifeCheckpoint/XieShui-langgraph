@@ -9,7 +9,7 @@ class AttemptCompletionSchema(BaseModel):
     status: str = Field(description="任务完成状态，例如“成功”或“失败”，保持简短")
     reason: str = Field(description="任务完成情况描述，描述该任务通过什么方式被完成，最终结果是什么")
 
-@tool(name="attempt_completion", args_schema=AttemptCompletionSchema)
+@tool("attempt_completion", args_schema=AttemptCompletionSchema)
 def attempt_completion(status: str, reason: str) -> str:
     return f"任务状态: {status}\n\n完成情况: {reason}"
 
