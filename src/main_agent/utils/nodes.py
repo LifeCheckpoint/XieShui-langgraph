@@ -9,7 +9,7 @@ from __future__ import annotations
 from langgraph.types import interrupt
 from langchain_openai import ChatOpenAI
 from langchain_core.runnables import RunnableConfig
-from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
+from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, ToolMessage
 from aiopath import AsyncPath
 from typing import Any, Dict
 
@@ -39,6 +39,19 @@ async def finish_interrupt(state: MainAgentState, config: RunnableConfig) -> Dic
     next_input = interrupt("向我对话以继续...")
     return {"messages": [HumanMessage(content=next_input)]}
 
+
+async def ask_interrupt(state: MainAgentState, config: RunnableConfig) -> Dict[str, Any]:
+    """
+    中断并询问用户问题
+    """
+    # 获取最近一条 ask_question 工具调用的内容
+    for msg in reversed(state.messages):
+        if isinstance(msg, ToolMessage):
+            question_and_choices = msg.content
+            break
+
+    user_input = interrupt(question_and_choices)
+    return {"messages": [HumanMessage(content=user_input)]}
 
 async def agent_execution(state: MainAgentState, config: RunnableConfig) -> Dict[str, Any]:
     """
