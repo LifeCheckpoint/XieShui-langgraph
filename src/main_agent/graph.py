@@ -10,6 +10,7 @@ from typing import Any, Dict, TypedDict
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import StateGraph
 
+from utils import MainAgentState
 
 class Configuration(TypedDict):
     """Configurable parameters for the agent.
@@ -21,18 +22,7 @@ class Configuration(TypedDict):
     my_configurable_param: str
 
 
-@dataclass
-class State:
-    """Input state for the agent.
-
-    Defines the initial structure of incoming data.
-    See: https://langchain-ai.github.io/langgraph/concepts/low_level/#state
-    """
-
-    changeme: str = "example"
-
-
-async def call_model(state: State, config: RunnableConfig) -> Dict[str, Any]:
+async def call_model(state: MainAgentState, config: RunnableConfig) -> Dict[str, Any]:
     """Process input and returns output.
 
     Can use runtime configuration to alter behavior.
@@ -46,7 +36,7 @@ async def call_model(state: State, config: RunnableConfig) -> Dict[str, Any]:
 
 # Define the graph
 graph = (
-    StateGraph(State, config_schema=Configuration)
+    StateGraph(MainAgentState, config_schema=Configuration)
     .add_node(call_model)
     .add_edge("__start__", "call_model")
     .compile(name="New Graph")
