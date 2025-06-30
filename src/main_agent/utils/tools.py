@@ -13,6 +13,7 @@ class AttemptCompletionSchema(BaseModel):
 def attempt_completion(status: str, reason: str) -> str:
     return f"任务状态: {status}\n\n完成情况: {reason}"
 
-tools = ToolNode([attempt_completion])
+tool_list = [attempt_completion]
+tools = ToolNode(tool_list)
 
-__all__ = ["tools"]
+__all__ = ["tool_list", "tools"]

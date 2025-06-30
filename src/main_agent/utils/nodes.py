@@ -14,6 +14,7 @@ from aiopath import AsyncPath
 from typing import Any, Dict
 
 from src.main_agent.utils.state import MainAgentState
+from src.main_agent.utils.tools import tool_list
 
 
 async def welcome(state: MainAgentState, config: RunnableConfig) -> Dict[str, Any]:
@@ -50,10 +51,10 @@ async def agent_execution(state: MainAgentState, config: RunnableConfig) -> Dict
         api_key=(await (AsyncPath(__file__).parent / "api_key").read_text(encoding="utf-8")).strip(),
         max_retries=3,
         max_tokens=8192,
-    ) # TODO: 更灵活的模型配置
+    ).bind_tools(tool_list) # TODO: 更灵活的模型配置
     
     response = await llm.ainvoke(state.messages)
-    return {"messages": [AIMessage(content=response.content)]}
+    return {"messages": [response]}
 
 
 def should_tool(state: MainAgentState, config: RunnableConfig) -> str:
@@ -64,7 +65,8 @@ def should_tool(state: MainAgentState, config: RunnableConfig) -> str:
     """
     messages = state.messages
     last_message = messages[-1]
-    if last_message.tool_calls:
+    # 只有 AIMessage 才会有 tool_calls 属性
+    if isinstance(last_message, AIMessage) and last_message.tool_calls:
         return "tools"
     return "no_tools_warning"
 
@@ -76,9 +78,19 @@ def should_finish(state: MainAgentState, config: RunnableConfig) -> str:
     - 否则返回 "agent_execution" 表示进入 Agent 执行节点
     """
     messages = state.messages
-    last_message = messages[-1]
-    if last_message.tool_calls and last_message.tool_calls[0].name == "attempt_completion":
-        return "finish_interrupt"
+    # 查找最近的 AIMessage，因为只有 AIMessage 才会有 tool_calls 属性
+    ai_message = None
+    for msg in reversed(messages):
+        if isinstance(msg, AIMessage):
+            ai_message = msg
+            break
+    
+    if ai_message and ai_message.tool_calls:
+        # 检查是否有 attempt_completion 工具调用
+        for tool_call in ai_message.tool_calls:
+            if tool_call["name"] == "attempt_completion":
+                return "finish_interrupt"
+    
     return "agent_execution"
 
 
