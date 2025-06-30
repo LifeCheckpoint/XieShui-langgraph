@@ -15,11 +15,12 @@ async def agent_execution(state: MainAgentState, config: RunnableConfig) -> Dict
     """
     llm = ChatOpenAI(
         model="google/gemini-2.5-flash",
-        temperature=0.55,
+        temperature=0.5,
         base_url="https://openrouter.ai/api/v1",
         api_key=(await (AsyncPath(__file__).parent.parent / "api_key").read_text(encoding="utf-8")).strip(),
         max_retries=3,
         max_tokens=8192,
+        frequency_penalty=0.5,
     ).bind_tools(tool_list) # TODO: 更灵活的模型配置
     
     response = await llm.ainvoke(state.messages)
