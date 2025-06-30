@@ -71,11 +71,9 @@ def should_tool(state: MainAgentState, config: RunnableConfig) -> str:
     return "no_tools_warning"
 
 
-def should_finish(state: MainAgentState, config: RunnableConfig) -> str:
+def tool_result_transport(state: MainAgentState, config: RunnableConfig) -> str:
     """
-    检查是否需要结束任务，如果最后一条消息：
-    - 包含 `attempt_completion` 工具调用，则返回 "finish_interrupt" 进入中断节点
-    - 否则返回 "agent_execution" 表示进入 Agent 执行节点
+    通过工具调用确定下一步 Agent 的转移执行情况
     """
     messages = state.messages
     # 查找最近的 AIMessage，因为只有 AIMessage 才会有 tool_calls 属性
@@ -86,10 +84,14 @@ def should_finish(state: MainAgentState, config: RunnableConfig) -> str:
             break
     
     if ai_message and ai_message.tool_calls:
-        # 检查是否有 attempt_completion 工具调用
         for tool_call in ai_message.tool_calls:
-            if tool_call["name"] == "attempt_completion":
-                return "finish_interrupt"
+            
+            # 检查是否有工具调用
+            match tool_call["name"]:
+                case "attempt_completion":
+                    return "finish_interrupt"
+                case "ask_question":
+                    return "ask_interrupt"
     
     return "agent_execution"
 
@@ -105,5 +107,5 @@ def no_tools_warning(state: MainAgentState, config: RunnableConfig) -> Dict[str,
 
 __all__ = [
     "welcome", "finish_interrupt", "agent_execution", 
-    "should_tool", "no_tools_warning", "should_finish"
+    "should_tool", "no_tools_warning", "tool_result_transport"
 ]
