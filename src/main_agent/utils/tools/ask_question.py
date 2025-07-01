@@ -4,9 +4,23 @@ from langchain_core.tools import tool
 
 class AskQuestionSchema(BaseModel):
     """
-    当你需要向用户确认信息的时候，使用此工具向用户提问
+    当你需要向用户确认信息的时候，使用此工具向用户提问。
     对于问题，应该提供一系列选项供用户选择。
-    例如：你可以询问用户是否需要继续执行任务，或者需要提供更多信息。
+    
+    Examples:
+
+    1. 向用户确认其指令中模糊的部分，要求提供具体信息
+    - question: 您在任务描述中提到的“数据分析”具体指什么？
+    - option_1: 数据清洗，将原始数据转换为可用格式
+    - option_2: 数据可视化，生成图表和图形可供分析
+    - option_3: 统计分析，计算平均值、标准差等
+    - option_4: 机器学习，使用算法进行预测和分类，并生成模型
+
+    2. 向用户确认是否执行某些操作
+    - question: 您是否认同我的分析并开始执行？
+    - option_1: 是的，我同意并希望开始执行
+    - option_2: 不，我需要更多信息
+    - option_3: 你的分析正确，但我希望你再考虑一下执行的方式
     """
     question: str = Field(description="需要向用户提问的问题")
     option_1: str = Field(description="选项1的内容")
