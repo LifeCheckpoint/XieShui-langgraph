@@ -15,6 +15,7 @@ dependencies = [
     "langchain[openai]>=0.3.26",
     "langgraph>=0.2.6",
     "langgraph-sdk>=0.1.72",
+    "langmem>=0.0.1rc9",
     "python-dotenv>=1.0.1",
 ]
 
