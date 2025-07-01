@@ -6,5 +6,6 @@ from src.main_agent.utils.nodes.warnings import *
 
 __all__ = [
     "welcome", "finish_interrupt", "agent_execution", 
-    "should_tool", "no_tools_warning", "tool_result_transport", "ask_interrupt"
+    "should_tool", "no_tools_warning", "tool_result_transport", "ask_interrupt",
+    "summarization_node"
 ]

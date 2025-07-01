@@ -39,7 +39,7 @@ def tool_result_transport(state: MainAgentState, config: RunnableConfig) -> str:
             # 检查是否有工具调用
             match tool_call["name"]:
                 case "attempt_completion":
-                    return "finish_interrupt"
+                    return "summarization"
                 case "ask_question":
                     return "ask_interrupt"
     
