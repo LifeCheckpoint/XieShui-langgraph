@@ -7,7 +7,7 @@ from typing import Any, Dict
 
 from src.main_agent.utils.state import MainAgentState
 from src.main_agent.utils.tools import tool_list
-from src.main_agent.utils.llm_manager import llm_manager
+from src.main_agent.llm_manager import llm_manager
 
 
 summarization_node = SummarizationNode(

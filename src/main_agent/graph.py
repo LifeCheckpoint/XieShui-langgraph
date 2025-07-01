@@ -7,6 +7,15 @@ from __future__ import annotations
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph, START, END
 
+# 配置 LLM
+from src.main_agent.llm_manager import LLMConfig, initialize_llm_manager
+initialize_llm_manager({
+    "default": LLMConfig(),
+    "summarization": LLMConfig(temperature=0.2),
+    "agent_execution": LLMConfig(temperature=0.3),
+    "tools": LLMConfig(temperature=0.3, max_tokens=4096)
+})
+
 from src.main_agent.utils import (
     # state
     MainAgentState,
