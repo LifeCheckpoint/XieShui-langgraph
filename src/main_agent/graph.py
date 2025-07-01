@@ -22,6 +22,7 @@ from src.main_agent.utils import (
     no_tools_warning,
     tool_result_transport,
     ask_interrupt,
+    summarization_node,
     tools,
 )
 
@@ -35,15 +36,17 @@ builder.add_node("agent_execution", agent_execution)
 builder.add_node("no_tools_warning", no_tools_warning)
 builder.add_node("ask_interrupt", ask_interrupt)
 builder.add_node("tools", tools)
+builder.add_node("summarization", summarization_node)
 
 # 添加边
 builder.add_edge(START, "welcome")
 builder.add_edge("welcome", "finish_interrupt")
 builder.add_edge("finish_interrupt", "agent_execution")
 builder.add_conditional_edges("agent_execution", should_tool, ["tools", "no_tools_warning"]) 
-builder.add_conditional_edges("tools", tool_result_transport, ["finish_interrupt", "agent_execution", "ask_interrupt"])
+builder.add_conditional_edges("tools", tool_result_transport, ["summarization", "agent_execution", "ask_interrupt"])
 builder.add_edge("ask_interrupt", "agent_execution")
 builder.add_edge("no_tools_warning", "agent_execution")
+builder.add_edge("summarization", "finish_interrupt")
 
 # 编译
 builder.compile(name="XieshuiMainAgent", checkpointer=MemorySaver())
