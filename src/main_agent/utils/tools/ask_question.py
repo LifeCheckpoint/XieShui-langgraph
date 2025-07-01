@@ -5,7 +5,7 @@ from langchain_core.tools import tool
 class AskQuestionSchema(BaseModel):
     """
     当你需要向用户确认信息的时候，使用此工具向用户提问。
-    对于问题，应该提供一系列选项供用户选择。
+    对于问题，应该提供一系列选项供用户选择，包含2-5个建议答案，这些答案按照优先级或逻辑顺序从问题引出。
     
     Examples:
 
@@ -22,7 +22,7 @@ class AskQuestionSchema(BaseModel):
     - option_2: 不，我需要更多信息
     - option_3: 你的分析正确，但我希望你再考虑一下执行的方式
     """
-    question: str = Field(description="需要向用户提问的问题")
+    question: str = Field(description="需要向用户提问的问题，这应该是一个明确、具体的问题，可以解决您需要的信息")
     option_1: str = Field(description="选项1的内容")
     option_2: str = Field(description="选项2的内容")
     option_3: Optional[str] = Field(default=None, description="选项3的内容（可选）")

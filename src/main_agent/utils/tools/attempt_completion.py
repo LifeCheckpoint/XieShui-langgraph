@@ -3,7 +3,8 @@ from langchain_core.tools import tool
 
 class AttemptCompletionSchema(BaseModel):
     """
-    当你认为一个任务完成的时候，使用此工具向系统确认该次任务完成
+    当你认为一个任务完成的时候，使用此工具向系统确认该次任务完成。收到工具使用结果并确认任务已完成后，使用此工具向用户展示您的工作结果。
+    如果用户对结果不满意，他们可能会给出反馈，您可以使用反馈进行改进并重试。
 
     Example:
 
@@ -16,7 +17,7 @@ class AttemptCompletionSchema(BaseModel):
     - reason: 由于网络问题，无法访问相关资源，已向用户说明情况并建议稍后重试
     """
     status: str = Field(description="任务完成状态，例如“成功”或“失败”，保持简短")
-    reason: str = Field(description="任务完成情况描述，描述该任务通过什么方式被完成，最终结果是什么")
+    reason: str = Field(description="任务完成情况描述，描述该任务通过什么方式被完成，最终结果是什么。另外，不要填写疑问句或“如有更多请求可以向我询问”等句子")
 
 @tool("attempt_completion", args_schema=AttemptCompletionSchema)
 def attempt_completion(status: str, reason: str) -> str:
