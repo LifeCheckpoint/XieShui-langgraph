@@ -24,7 +24,7 @@ summarization_node = SummarizationNode(
     ), # TODO: 更灵活的模型配置
     max_tokens=16384,
     max_tokens_before_summary=65536,
-    max_summary_tokens=16384,
+    max_summary_tokens=4096,
 )
 
 
