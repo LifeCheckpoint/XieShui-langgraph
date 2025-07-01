@@ -5,11 +5,25 @@ class PythonEvalSchema(BaseModel):
     """
     Python 代码执行工具，用于执行 Python 代码片段并返回结果
     通过 exec() 函数执行
+    
     需要注意以下要点：
     1. 只有在确保代码片段安全，并且经过用户明确同意的情况下才能使用此工具
     2. 你需要将结果储存到 result 变量中，由于是 exec 执行，注意不要造成副作用
+
+    Example:
+
+    1. 执行简单的数学计算
+    - code:
+        def calculate(x):
+            return calculate(x - 1) + 2 if x > 0 else 1
+        result = calculate(5)
+
+    2. 执行数据处理
+    - code:
+        datas = [11, 45, 14, 19, 19, 81, 0] # 用户提供的数据
+        result = sum(datas) / len(datas) if datas else 0
     """
-    code: str = Field(description="Python 代码片段，不要携带额外信息防止解析错误")
+    code: str = Field(description="Python 代码片段，不要携带任何额外信息防止解析错误")
 
 @tool("python_eval", args_schema=PythonEvalSchema)
 def python_eval(code: str) -> str:
