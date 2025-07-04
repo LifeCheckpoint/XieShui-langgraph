@@ -5,6 +5,7 @@
 - 将所有计划进行的检索任务，以结构化的方式提交。
 - 建议提交2~5个核心检索任务，每个任务应包含明确的检索意图和关键词组合。
 - 对于每个检索任务，请思考并提供其背后的“理由”，即该检索任务为何重要，它将帮助你解决哪个具体的研究问题或填补哪个信息空白。
+- 对于每个检索任务，给出一个推荐结果数量，数量应根据搜索的广泛性/深入性权衡，在3~15之间
 
 # 质量控制原则
 - 优先寻找学术资料和权威机构报告
@@ -18,8 +19,9 @@
 按照标准Json格式输出，不要附加任何额外内容，例如
 
 [
-    {"content": "use the LangGraph SDK create agent", "reason": "了解LangGraph SDK创建Agent的最佳实践与方法，以形成对构建智能体方法论的初步了解"},
-    {"content": "LangGraph Platform UI configure", "reason": "了解如何配置LangGraph平台的UI，藉以研究LnagGraph的UI入参与基本使用方式"},
+    {"content": "use the LangGraph SDK create agent", "reason": "了解LangGraph SDK创建Agent的最佳实践与方法，以形成对构建智能体方法论的初步了解", "max_result": 6},
+    {"content": "LangGraph Platform UI configure", "reason": "了解如何配置LangGraph平台的UI，藉以研究LangGraph的UI入参与基本使用方式", "max_result": 3},
+    {"content": "arxiv llm agent", "reason": "在Arxiv平台上搜索有关LLM Agent的论文，以了解当前前沿的学术进展或经典的理论体系", "max_result": 12},
     ...
 ]
 
