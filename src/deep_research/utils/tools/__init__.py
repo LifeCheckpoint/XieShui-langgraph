@@ -1,8 +1,6 @@
 from langgraph.prebuilt import ToolNode
 
-from src.deep_research.utils.tools.submit_plan import submit_plan
-
-tool_list = [submit_plan]
+tool_list = []
 """
 工具列表，包含了所有可用的工具函数
 """
