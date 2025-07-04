@@ -22,3 +22,9 @@
     {"content": "LangGraph Platform UI configure", "reason": "了解如何配置LangGraph平台的UI，藉以研究LnagGraph的UI入参与基本使用方式"},
     ...
 ]
+
+---
+
+现在可开始进行搜索：
+**研究话题**：{{ topic }}
+**研究背景**：{{ background }}
