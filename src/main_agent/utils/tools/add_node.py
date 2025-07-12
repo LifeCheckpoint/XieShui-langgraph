@@ -7,10 +7,10 @@ from node_class import Knowledge_Node,Knowledge_Edge,Knowledge_Graph
 
 class AddNodeSchema(BaseModel):
     '''
-    你创建一个类型为Knowledge_Node类型的节点
+    使用此工具创建一个知识图谱的节点
     你将为这个节点拟写一个符合情况的名字
     然后为这个节点添加适当描述与内容
-    如果你需要添加入边与出边列表，请调用add_edge
+    如果你需要添加入边与出边列表，即和本节点相关联的知识点节点，请调用add_edge
     
     Example:
     
@@ -20,8 +20,8 @@ class AddNodeSchema(BaseModel):
     
     
     '''
-    title: str = Field(description='节点名称')
-    description: Optional[str] = Field(default=None,description='节点描述')
+    title: str = Field(description='给这个节点一个称呼')
+    description: Optional[str] = Field(default=None,description='描述这个节点的定义以及属性')
     
     
 @tool('add_a_node',args_schema=AddNodeSchema)
@@ -29,13 +29,13 @@ def add_a_node(
     title: str = None,
     description: Optional[str] = None
     ):
-    node = Knowledge_Node(id,title,description)
+    node = Knowledge_Node(title,description)
     
     graph = Knowledge_Graph()
     try:
         graph.add_node(node)
-        return f'添加节点{node.name}成功'
+        return f'添加节点{node.title}成功'
     except ValueError as v:
-        return f'添加节点失败，原因{v}'
+        return f'添加节点失败，原因:{v}'
     except Exception as e:
-        return f'添加节点失败，原因：{e}'
+        return f'添加节点失败，原因:{e}'

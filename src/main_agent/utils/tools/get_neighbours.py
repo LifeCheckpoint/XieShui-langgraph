@@ -1,0 +1,22 @@
+from pydantic import BaseModel, Field
+from typing import Optional, Dict, Any, List
+from collections import deque
+import uuid
+from langchain_core.tools import tool
+from node_class import Knowledge_Node,Knowledge_Edge,Knowledge_Graph
+
+class GetNeighboursSchema(BaseModel):
+    node_id:str
+    
+@tool('_get_neighbours',args_schema=GetNeighboursSchema)
+def _get_neighbours(node_id:str):
+    graph = Knowledge_Graph()
+    
+    try:
+        list = graph.get_neighbours(node_id)
+        return list
+    except ValueError:
+        return f'节点{node_id}不存在'
+    
+    except Exception as e:
+        return f'返回节点列表失败，原因:{e}'
