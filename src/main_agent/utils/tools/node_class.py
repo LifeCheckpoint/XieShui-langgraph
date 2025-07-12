@@ -9,7 +9,6 @@ class Knowledge_Node(BaseModel):
     name: str
     title: str = None
     description: Optional[str] = None  # optional的意思是可以没有，有的话变量类型就是str
-    content: Optional[Any] = None
     in_edge: List[str] = []
     out_edge: List[str] = []
 
@@ -121,7 +120,7 @@ class Knowledge_Graph(BaseModel):
 
     def remove_edge(self,edge_id:str):
         if edge_id not in self.edges:
-            raise ValueError(f'节点 ID {edge_id} 不存在')
+            raise ValueError(f'边 ID {edge_id} 不存在')
             
         edge = self.edges[edge_id]
         edge.start_node.out_edge.remove(edge_id)
