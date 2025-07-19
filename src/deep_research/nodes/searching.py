@@ -33,7 +33,8 @@ async def execute_search(state: MainAgentState) -> dict:
 # --- Filter Search Results ---
 
 class FilteredURLs(BaseModel):
-    urls: list[str] = Field(..., description="筛选后用于精读的URL列表")
+    reading_list: list[str] = Field(..., description="筛选后用于精读的URL列表")
+    skimming_list: list[str] = Field(..., description="筛选后用于略读的URL列表")
 
 async def filter_search_results(state: MainAgentState) -> dict:
     """根据研究计划筛选搜索结果"""
@@ -59,6 +60,7 @@ async def filter_search_results(state: MainAgentState) -> dict:
     
     response = await llm.ainvoke([HumanMessage(content=rendered_prompt)])
     
-    current_cycle["reading_list"] = response.urls
+    current_cycle["reading_list"] = response.reading_list
+    current_cycle["skimming_list"] = response.skimming_list
     
     return {"research_cycles": state["research_cycles"]}

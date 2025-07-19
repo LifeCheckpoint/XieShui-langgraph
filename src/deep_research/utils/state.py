@@ -15,6 +15,7 @@ class ResearchCycleState(TypedDict):
     search_queries: List[str]
     search_results: List[dict]
     reading_list: List[str]
+    skimming_list: List[str]
     findings: List[str]
 
 class MainAgentState(TypedDict):
