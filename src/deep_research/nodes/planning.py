@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.pydantic_v1 import BaseModel, Field
+from langchain_core.messages import HumanMessage
+from pydantic import BaseModel, Field
 from aiopath import AsyncPath
-import json
+import jinja2
 
 from src.deep_research.utils.state import MainAgentState
 from src.main_agent.llm_manager import llm_manager
@@ -18,18 +18,18 @@ class ResearchPlan(BaseModel):
 async def plan_research(state: MainAgentState) -> dict:
     """根据当前状态制定研究计划"""
     prompt_path = AsyncPath(__file__).parent.parent / "utils" / "nodes" / "research_plan.txt"
-    prompt_template = await prompt_path.read_text(encoding="utf-8")
+    prompt_template_str = await prompt_path.read_text(encoding="utf-8")
     
-    prompt = ChatPromptTemplate.from_template(prompt_template)
+    template = jinja2.Template(prompt_template_str)
     
-    llm = llm_manager.get_llm(config_name="default").with_structured_output(ResearchPlan)
-    
-    chain = prompt | llm
-    
-    response = await chain.ainvoke({
+    rendered_prompt = template.render({
         "topic": state["topic"],
         "research_cycles": state["research_cycles"]
     })
+    
+    llm = llm_manager.get_llm(config_name="default").with_structured_output(ResearchPlan)
+    
+    response = await llm.ainvoke([HumanMessage(content=rendered_prompt)])
     
     current_cycle = state["research_cycles"][-1]
     current_cycle["research_plan"] = response.dict()
@@ -49,20 +49,20 @@ class SearchQueries(BaseModel):
 async def generate_search_queries(state: MainAgentState) -> dict:
     """根据研究计划生成搜索查询"""
     prompt_path = AsyncPath(__file__).parent.parent / "utils" / "nodes" / "search_instruction.txt"
-    prompt_template = await prompt_path.read_text(encoding="utf-8")
+    prompt_template_str = await prompt_path.read_text(encoding="utf-8")
     
-    prompt = ChatPromptTemplate.from_template(prompt_template)
-    
-    llm = llm_manager.get_llm(config_name="default").with_structured_output(SearchQueries)
-    
-    chain = prompt | llm
+    template = jinja2.Template(prompt_template_str)
     
     current_cycle = state["research_cycles"][-1]
     
-    response = await chain.ainvoke({
+    rendered_prompt = template.render({
         "topic": state["topic"],
         "research_plan": current_cycle["research_plan"]
     })
+    
+    llm = llm_manager.get_llm(config_name="default").with_structured_output(SearchQueries)
+    
+    response = await llm.ainvoke([HumanMessage(content=rendered_prompt)])
     
     current_cycle["search_queries"] = [q.dict() for q in response.queries]
     

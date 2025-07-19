@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.pydantic_v1 import BaseModel, Field
+from langchain_core.messages import HumanMessage
+from pydantic import BaseModel, Field
 from aiopath import AsyncPath
 import asyncio
 import requests
 from bs4 import BeautifulSoup
+import jinja2
 
 from src.deep_research.utils.state import MainAgentState
 from src.main_agent.llm_manager import llm_manager
@@ -37,19 +38,25 @@ async def read_and_summarize_page(url: str, topic: str, research_plan: dict) -> 
         return f"Error reading {url}: {e}"
 
     prompt_path = AsyncPath(__file__).parent.parent / "utils" / "nodes" / "rewrite.txt"
-    prompt_template = await prompt_path.read_text(encoding="utf-8")
+    prompt_template_str = await prompt_path.read_text(encoding="utf-8")
     
-    prompt = ChatPromptTemplate.from_template(prompt_template)
+    template = jinja2.Template(prompt_template_str)
+
+    # 为 original_text 设置一个截断，取首尾最大长度 / 2，中间省略
+    max_length = 120000
+    if len(original_text) > max_length:
+        half_length = max_length // 2
+        original_text = original_text[:half_length] + "..." + original_text[-half_length:]
     
-    llm = llm_manager.get_llm(config_name="default").with_structured_output(RewriteResult)
-    
-    chain = prompt | llm
-    
-    response = await chain.ainvoke({
+    rendered_prompt = template.render({
         "topic": topic,
         "research_plan": research_plan,
         "original_text": original_text
     })
+    
+    llm = llm_manager.get_llm(config_name="default").with_structured_output(RewriteResult)
+    
+    response = await llm.ainvoke([HumanMessage(content=rendered_prompt)])
     
     return response.summary
 
