@@ -35,6 +35,7 @@ async def execute_search(state: MainAgentState) -> dict:
 class FilteredURLs(BaseModel):
     reading_list: list[str] = Field(..., description="筛选后用于精读的URL列表")
     skimming_list: list[str] = Field(..., description="筛选后用于略读的URL列表")
+    ignore_list: list[str] = Field(..., description="筛选后忽略的URL列表") # 仅用于指导模型排除
 
 async def filter_search_results(state: MainAgentState) -> dict:
     """根据研究计划筛选搜索结果"""
