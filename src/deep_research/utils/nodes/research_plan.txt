@@ -48,6 +48,8 @@
 2. 研究范围，描述你计划研究的（子）主题或（子）领域
 3. 研究方法概述，描述你将如何进行研究
 
+**注意：你的新搜索不要与已完成的搜索重复**
+
 # 输出要求
 
 按照标准Json格式输出，不要附加任何额外内容，例如
@@ -69,6 +71,9 @@
 {% if research_cycles %}
 # 已有发现
 {% for cycle in research_cycles %}
+
+第 {{ cycle.cycle_count }} 轮研究已完成搜索:
+{{ cycle.search_queries }}
 
 ## 第 {{ cycle.cycle_count }} 轮研究发现:
 {% for finding in cycle.findings %}
