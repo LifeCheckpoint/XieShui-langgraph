@@ -60,4 +60,15 @@
 ---
 
 现在可根据当前情况做出计划：
-{{ situation }}
+
+# 研究主题
+{{ topic }}
+
+# 已有发现
+{% for cycle in research_cycles %}
+
+## 第 {{ cycle.cycle_count }} 轮研究发现:
+{% for finding in cycle.findings %}
+- {{ finding }}
+{% endfor %}
+{% endfor %}

@@ -50,8 +50,6 @@
 现在可开始进行决策：
 
 **研究话题**：{{ topic }}
-**研究背景**：{{ background }}
-**搜索内容**：{{ content }}
-**搜索目的**：{{ target }}
+**研究计划**：{{ research_plan }}
 
 **搜索资料原文结果**：{{ original_text }}
