@@ -24,7 +24,9 @@ async def plan_research(state: MainAgentState) -> dict:
     
     rendered_prompt = template.render({
         "topic": state["topic"],
-        "research_cycles": state["research_cycles"]
+        "research_cycles": state["research_cycles"],
+        "research_total_cycles": state.get("research_total_cycles", 5),
+        "current_cycle_index": len(state["research_cycles"]) + 1
     })
     
     llm = llm_manager.get_llm(config_name="default").with_structured_output(ResearchPlan)

@@ -23,6 +23,7 @@ class MainAgentState(TypedDict):
     topic: str
     research_summary: str
     research_cycles: List[ResearchCycleState]
+    research_total_cycles: int = 5
     report: str
 
 __all__ = ["MainAgentState", "ResearchCycleState"]

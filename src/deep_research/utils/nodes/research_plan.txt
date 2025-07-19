@@ -68,10 +68,13 @@
 # 研究主题
 {{ topic }}
 
+总共进行研究轮次：{{ research_total_cycles }}
+目前研究轮次：{{ current_cycle_index }}
+
 {% if research_cycles %}
 # 已有发现
-{% for cycle in research_cycles %}
 
+{% for cycle in research_cycles %}
 第 {{ cycle.cycle_count }} 轮研究已完成搜索:
 {{ cycle.search_queries }}
 

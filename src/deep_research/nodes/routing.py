@@ -24,7 +24,7 @@ def update_and_check_cycle(state: MainAgentState) -> str:
     """更新并检查循环次数，决定下一步走向"""
     current_cycle_count = len(state["research_cycles"])
     
-    if current_cycle_count >= 5:
+    if current_cycle_count >= state.get("research_total_cycles", 5):
         return "generate_report"
     else:
         next_cycle = {
