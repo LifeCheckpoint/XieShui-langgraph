@@ -1,0 +1,41 @@
+{% raw %}
+针对研究内容，你已经完成了检索任务，你需要判断检索的结果是否符合你的研究思路，并将其分为“精读列表”和“略读列表”。
+
+# 质量控制原则
+- **精读列表 (reading_list)**: 包含 0-5 个最核心、最相关的 URL。这些通常是权威报告或深度分析文章。
+- **略读列表 (skimming_list)**: 包含其他有一定相关性，但不需要立即深入研究的 URL。这些可以作为背景资料或扩展阅读。
+- **忽略列表 (ignore_list)**: 包含无相关性，也不需要研究的 URL
+- 优先纳入学术资料和权威机构报告。
+- 注意信息的时效性。
+- 保持批判性思维，避免确认偏见。
+- 确保信息来源的多样性和代表性。
+- 对于与当前主题不相关的内容或垃圾结果，勇于排除。
+
+# 输出要求
+
+按照标准 Json 格式输出，包含 `reading_list` 和 `skimming_list`、`ignore_list` 三键，不要附加任何额外内容，例如：
+
+```json
+{
+    "reading_list": [
+        "https://arxiv.org/pdf/2402.05120",
+        "https://www.nature.com/articles/s41586-021-03583-9"
+    ],
+    "skimming_list": [
+        "https://www.zhihu.com/question/406250888",
+        "https://en.wikipedia.org/wiki/Quantum_machine_learning"
+    ],
+    "ignore_list": [
+        "https://ua18.com/article114514"
+    ]
+}
+```
+
+{% endraw %}
+---
+
+现在，请参考搜索引擎返回的结果标题、链接、网页摘要、相关性等综合数据，筛选出你要进行精读、略读和不读的 urls。
+
+**研究计划**：{{ research_plan }}
+**搜索结果**：
+{{ search_result }}

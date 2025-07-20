@@ -42,5 +42,7 @@ def tool_result_transport(state: MainAgentState, config: RunnableConfig) -> str:
                     return "summarization"
                 case "ask_question":
                     return "ask_interrupt"
+                case "deep_research":
+                    return "deep_research_node"
     
     return "agent_execution"

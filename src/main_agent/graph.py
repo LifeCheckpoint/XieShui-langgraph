@@ -13,7 +13,8 @@ initialize_llm_manager({
     "default": LLMConfig(),
     "summarization": LLMConfig(temperature=0.2),
     "agent_execution": LLMConfig(temperature=0.3),
-    "tools": LLMConfig(temperature=0.3, max_tokens=4096)
+    "tools": LLMConfig(temperature=0.3, max_tokens=4096),
+    "long_writing": LLMConfig(model_name="google/gemini-2.5-flash", temperature=0.5, max_tokens=65536, frequency_penalty=0.4),
 })
 
 from src.main_agent.utils import (
@@ -33,9 +34,10 @@ from src.main_agent.utils import (
     ask_interrupt,
     summarization_node,
     tools,
+    deep_research_node,
 )
 
-
+# 主图定义
 builder = StateGraph(MainAgentState, config_schema=Configuration)
 
 # 添加节点
@@ -46,16 +48,18 @@ builder.add_node("no_tools_warning", no_tools_warning)
 builder.add_node("ask_interrupt", ask_interrupt)
 builder.add_node("tools", tools)
 builder.add_node("summarization", summarization_node)
+builder.add_node("deep_research_node", deep_research_node)
 
 # 添加边
 builder.add_edge(START, "welcome")
 builder.add_edge("welcome", "finish_interrupt")
 builder.add_edge("finish_interrupt", "agent_execution")
 builder.add_conditional_edges("agent_execution", should_tool, ["tools", "no_tools_warning"]) 
-builder.add_conditional_edges("tools", tool_result_transport, ["summarization", "agent_execution", "ask_interrupt"])
+builder.add_conditional_edges("tools", tool_result_transport, ["summarization", "agent_execution", "ask_interrupt", "deep_research_node"])
 builder.add_edge("ask_interrupt", "agent_execution")
 builder.add_edge("no_tools_warning", "agent_execution")
 builder.add_edge("summarization", "finish_interrupt")
+builder.add_edge("deep_research_node", "agent_execution")
 
 # 编译
 builder.compile(name="XieshuiMainAgent", checkpointer=MemorySaver())
