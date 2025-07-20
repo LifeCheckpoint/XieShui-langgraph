@@ -48,6 +48,7 @@ builder.add_node("no_tools_warning", no_tools_warning)
 builder.add_node("ask_interrupt", ask_interrupt)
 builder.add_node("tools", tools)
 builder.add_node("summarization", summarization_node)
+builder.add_node("deep_research_node", deep_research_node)
 
 # 添加边
 builder.add_edge(START, "welcome")
