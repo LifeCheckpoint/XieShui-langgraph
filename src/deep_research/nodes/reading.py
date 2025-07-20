@@ -19,7 +19,7 @@ class RewriteResult(BaseModel):
     summary: str = Field(..., description="对文本的简短摘要")
 
 async def summarize_text(text: str, topic: str, research_plan: dict, url: str) -> str:
-    """对给定文本进行总结"""
+    """对给定文本进行重写"""
     prompt_path = AsyncPath(__file__).parent.parent / "utils" / "nodes" / "rewrite.txt"
     prompt_template_str = await prompt_path.read_text(encoding="utf-8")
     
@@ -37,7 +37,7 @@ async def summarize_text(text: str, topic: str, research_plan: dict, url: str) -
         "original_text": text
     })
     
-    llm = llm_manager.get_llm(config_name="default").with_structured_output(RewriteResult)
+    llm = llm_manager.get_llm(config_name="long_writing").with_structured_output(RewriteResult)
     
     try:
         response = await llm.ainvoke([HumanMessage(content=rendered_prompt)])

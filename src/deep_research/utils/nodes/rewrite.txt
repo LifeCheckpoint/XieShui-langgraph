@@ -37,6 +37,7 @@
 
 {
     "rewrite": false,
+    "content": "(原文文本，如果原文都是乱码则为空字符串)"
     "summary": "这段文本的摘要，控制字数在200字"
 }
 
@@ -44,7 +45,7 @@
 
 {
     "rewrite": true,
-    "content": "your rewritting here",
+    "content": "(转写后文本)",
     "summary": "这段文本的摘要，控制字数在200字"
 }
 
