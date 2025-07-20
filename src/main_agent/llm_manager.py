@@ -14,7 +14,7 @@ class LLMConfig(BaseModel):
     temperature: float = Field(default=0.3, description="LLM 温度")
     base_url: str = Field(default="https://openrouter.ai/api/v1", description="LLM API Base URL")
     max_retries: int = Field(default=3, description="LLM 最大重试次数")
-    max_tokens: int = Field(default=8192, description="LLM 最大 token 数")
+    max_tokens: int = Field(default=16384, description="LLM 最大 token 数")
     frequency_penalty: float = Field(default=0.0, description="LLM 频率惩罚")
     api_key_path: str = Field(default=(Path(__file__).parent / "api_key.json").as_posix(), description="API Key 文件路径")
 

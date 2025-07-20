@@ -13,7 +13,8 @@ initialize_llm_manager({
     "default": LLMConfig(),
     "summarization": LLMConfig(temperature=0.2),
     "agent_execution": LLMConfig(temperature=0.3),
-    "tools": LLMConfig(temperature=0.3, max_tokens=4096)
+    "tools": LLMConfig(temperature=0.3, max_tokens=4096),
+    "long_writing": LLMConfig(model_name="google/gemini-2.5-flash", temperature=0.5, max_tokens=65536, frequency_penalty=0.4),
 })
 
 from src.main_agent.utils import (

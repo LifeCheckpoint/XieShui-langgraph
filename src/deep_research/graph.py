@@ -8,6 +8,7 @@ from src.deep_research.nodes.planning import plan_research, generate_search_quer
 from src.deep_research.nodes.searching import execute_search, filter_search_results
 from src.deep_research.nodes.reading import read_and_summarize
 from src.deep_research.nodes.routing import initialize_research, update_and_check_cycle
+from src.deep_research.nodes.writing import generate_outline, write_sections, finetune_report
 
 # --- Build Graph ---
 
@@ -20,7 +21,9 @@ builder.add_node("generate_search_queries", generate_search_queries)
 builder.add_node("execute_search", execute_search)
 builder.add_node("filter_search_results", filter_search_results)
 builder.add_node("read_and_summarize", read_and_summarize)
-# Note: generate_report node will be added by the user
+builder.add_node("generate_outline", generate_outline)
+builder.add_node("write_sections", write_sections)
+builder.add_node("finetune_report", finetune_report)
 
 # Add edges
 builder.add_edge(START, "initialize_research")
@@ -36,9 +39,13 @@ builder.add_conditional_edges(
     update_and_check_cycle,
     {
         "plan_research": "plan_research",
-        "generate_report": END # Temporarily end here, user will add generate_report node
+        "generate_report": "generate_outline"
     }
 )
+
+builder.add_edge("generate_outline", "write_sections")
+builder.add_edge("write_sections", "finetune_report")
+builder.add_edge("finetune_report", END)
 
 # Compile the graph
 graph = builder.compile(checkpointer=MemorySaver())
