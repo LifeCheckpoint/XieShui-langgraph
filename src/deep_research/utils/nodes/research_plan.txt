@@ -78,11 +78,13 @@
 
 {% for cycle in research_cycles %}
 第 {{ cycle.cycle_count }} 轮研究已完成搜索:
-{{ cycle.search_queries }}
+{% for search_q in cycle.search_queries %}
+- {{ search_q.content }}
+{% endfor %}
 
 ## 第 {{ cycle.cycle_count }} 轮研究发现:
 {% for finding in cycle.findings %}
-- {{ finding }}
+- {{ finding.summary }}
 {% endfor %}
 {% endfor %}
 {% endif %}

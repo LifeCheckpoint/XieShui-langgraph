@@ -3,6 +3,7 @@ from __future__ import annotations
 from langchain_core.messages import HumanMessage
 from pydantic import BaseModel, Field
 from aiopath import AsyncPath
+from pathlib import Path
 import jinja2
 
 from src.deep_research.utils.state import MainAgentState
@@ -22,17 +23,37 @@ async def plan_research(state: MainAgentState) -> dict:
     prompt_template_str = await prompt_path.read_text(encoding="utf-8")
     
     template = jinja2.Template(prompt_template_str)
+
+    # 由于会爆 token，所以自适应裁剪所有的 findings
+
+    adapted_state = state.copy()
+    # 统计所有 fidings 的总长度
+    total_finding_count = sum(len(cycle.get("findings", [])) for cycle in adapted_state["research_cycles"])
+    total_finding_length = sum(len(finding) for cycle in adapted_state["research_cycles"] for finding in cycle.get("findings", []))
+    # 总长度超过 128000 时，强制裁剪到 100000 // total_finding_count
+    if total_finding_length > 128000 and total_finding_count > 0:
+        max_finding_length = 100000 // total_finding_count
+        for i, cycle in enumerate(adapted_state["research_cycles"]):
+            for j, finding in enumerate(cycle.get("findings", [])):
+                if len(finding) > max_finding_length:
+                    adapted_state["research_cycles"][i]["findings"][j] = finding[:max_finding_length] + "..."
     
+    # 渲染模板
+
     rendered_prompt = template.render({
-        "topic": state["topic"],
-        "research_cycles": state["research_cycles"],
-        "research_total_cycles": state.get("research_total_cycles", 5),
-        "current_cycle_index": len(state["research_cycles"]) + 1
+        "topic": adapted_state["topic"],
+        "research_cycles": adapted_state["research_cycles"],
+        "research_total_cycles": adapted_state.get("research_total_cycles", 5),
+        "current_cycle_index": len(adapted_state["research_cycles"]) + 1
     })
     
     llm = llm_manager.get_llm(config_name="default").with_structured_output(ResearchPlan)
     
-    response = await llm.ainvoke([HumanMessage(content=rendered_prompt)])
+    try:
+        response = await llm.ainvoke([HumanMessage(content=rendered_prompt)])
+    except Exception as e:
+        (Path(__file__).parent / "error.log").write_text(f"Error invoking LLM: {e}\nPrompt: {rendered_prompt}", encoding="utf-8")
+        raise e
     
     current_cycle = state["research_cycles"][-1]
     current_cycle["research_plan"] = response.dict()
