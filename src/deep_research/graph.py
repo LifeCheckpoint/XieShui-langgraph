@@ -48,6 +48,6 @@ builder.add_edge("write_sections", "finetune_report")
 builder.add_edge("finetune_report", END)
 
 # Compile the graph
-graph = builder.compile(checkpointer=MemorySaver())
+graph = builder.compile(checkpointer=True)
 
 __all__ = ["graph"]

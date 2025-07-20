@@ -34,9 +34,10 @@ from src.main_agent.utils import (
     ask_interrupt,
     summarization_node,
     tools,
+    deep_research_node,
 )
 
-
+# 主图定义
 builder = StateGraph(MainAgentState, config_schema=Configuration)
 
 # 添加节点
@@ -53,10 +54,11 @@ builder.add_edge(START, "welcome")
 builder.add_edge("welcome", "finish_interrupt")
 builder.add_edge("finish_interrupt", "agent_execution")
 builder.add_conditional_edges("agent_execution", should_tool, ["tools", "no_tools_warning"]) 
-builder.add_conditional_edges("tools", tool_result_transport, ["summarization", "agent_execution", "ask_interrupt"])
+builder.add_conditional_edges("tools", tool_result_transport, ["summarization", "agent_execution", "ask_interrupt", "deep_research_node"])
 builder.add_edge("ask_interrupt", "agent_execution")
 builder.add_edge("no_tools_warning", "agent_execution")
 builder.add_edge("summarization", "finish_interrupt")
+builder.add_edge("deep_research_node", "agent_execution")
 
 # 编译
 builder.compile(name="XieshuiMainAgent", checkpointer=MemorySaver())
