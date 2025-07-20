@@ -5,7 +5,9 @@ import json
 
 class DeepResearchSchema(BaseModel):
     """
+    强调: **不可直接调用此工具，必须和用户二次确认**
     当你需要对一个话题进行深度研究时，使用此工具生成一份非常全面而详细的深度报告
+    研究的广度可以非常大，因此避免对相似话题进行多次研究
     注意，由于这个过程耗时较久，你必须在**调用此工具前**使用自然语言向用户**二次确认你的调用计划**
     
     Examples:
@@ -17,6 +19,8 @@ class DeepResearchSchema(BaseModel):
     2. 用户要求对量子机器学习中量子随机森林的研究现状进行分析，并得到用户二次确认
     - subject: 量子机器学习中量子随机森林的研究现状
     - recursion: 4
+
+    最后强调：**禁止直接调用此工具！必须明确二次确认！！**
     """
     subject: str = Field(description="你将要研究的话题，清晰简明")
     recursion: str = Field(description="研究进行的轮次，一般性话题建议设置为3，专业或资料稀缺的话题建议设置为4；默认为3")

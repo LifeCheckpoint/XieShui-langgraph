@@ -15,6 +15,7 @@ def initialize_research(state: MainAgentState) -> dict:
         "reading_list": [],
         "findings": []
     }
+    state["research_total_cycles"] = int(state["research_total_cycles"])
     return {
         "topic": topic,
         "research_cycles": [initial_cycle]

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from langgraph.graph import StateGraph, START, END
-from langgraph.checkpoint.memory import MemorySaver
 
 from src.deep_research.utils.state import MainAgentState
 from src.deep_research.nodes.planning import plan_research, generate_search_queries

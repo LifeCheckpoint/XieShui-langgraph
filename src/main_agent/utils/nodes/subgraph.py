@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-import json
+import traceback
 from langchain_core.runnables import RunnableConfig
 from langchain_core.messages import ToolMessage
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage, HumanMessage
 from typing import Any, Dict
 
 from src.main_agent.utils.state import MainAgentState
 from src.deep_research.graph import graph
 
-def deep_research_node(state: MainAgentState, config: RunnableConfig) -> Dict[str, Any]:
+async def deep_research_node(state: MainAgentState, config: RunnableConfig) -> Dict[str, Any]:
     """
     深度研究节点，用于处理深度研究任务的状态和消息。
     """
@@ -39,12 +39,13 @@ def deep_research_node(state: MainAgentState, config: RunnableConfig) -> Dict[st
     if param:
         # 有参数，开始执行
         try:
-            result = graph.invoke({
+            result = await graph.ainvoke({
+                "messages": HumanMessage(content=tool_call["args"].get("subject", "")),
                 "topic": param["subject"],
-                "research_total_cycles": param["recursion"]
+                "research_total_cycles": int(param["recursion"])
             })
         except Exception as e:
-            error_msg = "深度研究执行过程中发生异常: " + str(e)
+            error_msg = "深度研究执行过程中发生异常: " + str(e) + "\n" + traceback.format_exc()
             return {
                 "messages": [ToolMessage(
                     tool_call_id="deep_research",
