@@ -502,6 +502,97 @@ class KnowledgeGraphIntegration:
                 "graph_name": self.current_graph.name,
                 "error_prompt": error_prompt
             })
+    
+    def update_node_in_current_graph(self, node_id: str, title: Optional[str] = None, description: Optional[str] = None, tags: Optional[List[str]] = None) -> str:
+        """
+        更新当前图谱中指定ID的节点信息。
+
+        Args:
+            node_id (str): 要更新的节点ID。
+            title (Optional[str], optional): 新的节点标题。
+            description (Optional[str], optional): 新的节点描述。
+            tags (Optional[List[str]], optional): 新的节点标签列表。
+
+        Returns:
+            str: 渲染后的prompt字符串。
+        """
+        if not self.current_graph:
+            return jinja2.Template(PROMPT_NO_CURRENT_GRAPH).render()
+
+        try:
+            # 获取更新前的节点信息
+            original_node = self.current_graph.get_node(node_id)
+            if not original_node:
+                raise ValueError(f"节点 ID {node_id} 不存在")
+            
+            original_node_copy = original_node.model_copy(deep=True)
+
+            self.current_graph.update_node(node_id, title, description, tags)
+            
+            # 获取更新后的节点信息
+            updated_node = self.current_graph.get_node(node_id)
+
+            return jinja2.Template(PROMPT_UPDATE_NODE).render({
+                "success": True,
+                "graph_name": self.current_graph.name,
+                "node_id": node_id,
+                "original_node": original_node_copy,
+                "updated_node": updated_node
+            })
+
+        except ValueError as e:
+            error_prompt = jinja2.Template(PROMPT_OPERATION_ERROR).render({"error_message": str(e)})
+            return jinja2.Template(PROMPT_UPDATE_NODE).render({
+                "success": False,
+                "graph_name": self.current_graph.name,
+                "node_id": node_id,
+                "error_prompt": error_prompt
+            })
+
+    def update_edge_in_current_graph(self, edge_id: str, title: Optional[str] = None, description: Optional[str] = None) -> str:
+        """
+        更新当前图谱中指定ID的边信息。
+
+        Args:
+            edge_id (str): 要更新的边ID。
+            title (Optional[str], optional): 新的边标题。
+            description (Optional[str], optional): 新的边描述。
+
+        Returns:
+            str: 渲染后的prompt字符串。
+        """
+        if not self.current_graph:
+            return jinja2.Template(PROMPT_NO_CURRENT_GRAPH).render()
+
+        try:
+            # 获取更新前的边信息
+            original_edge = self.current_graph.get_edge(edge_id)
+            if not original_edge:
+                raise ValueError(f"边 ID {edge_id} 不存在")
+            
+            original_edge_copy = original_edge.model_copy(deep=True)
+
+            self.current_graph.update_edge(edge_id, title, description)
+            
+            # 获取更新后的边信息
+            updated_edge = self.current_graph.get_edge(edge_id)
+
+            return jinja2.Template(PROMPT_UPDATE_EDGE).render({
+                "success": True,
+                "graph_name": self.current_graph.name,
+                "edge_id": edge_id,
+                "original_edge": original_edge_copy,
+                "updated_edge": updated_edge
+            })
+
+        except ValueError as e:
+            error_prompt = jinja2.Template(PROMPT_OPERATION_ERROR).render({"error_message": str(e)})
+            return jinja2.Template(PROMPT_UPDATE_EDGE).render({
+                "success": False,
+                "graph_name": self.current_graph.name,
+                "edge_id": edge_id,
+                "error_prompt": error_prompt
+            })
 
     def batch_add_from_json(self, json_data: str) -> str:
         """

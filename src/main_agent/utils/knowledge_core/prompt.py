@@ -429,6 +429,68 @@ Args:
     error_prompt (str): 如果失败，则传递由 PROMPT_OPERATION_ERROR 生成的错误提示。
 """
 
+PROMPT_UPDATE_NODE = """
+{% if success %}
+## 节点更新成功
+
+在知识图谱 **{{ graph_name }}** 中，节点 **{{ node_id }}** 已成功更新。
+
+**更新前:**
+- **标题:** {{ original_node.title }}
+- **描述:** {{ original_node.description or '无' }}
+- **标签:** {{ original_node.tags | join(', ') if original_node.tags else '无' }}
+
+**更新后:**
+- **标题:** {{ updated_node.title }}
+- **描述:** {{ updated_node.description or '无' }}
+- **标签:** {{ updated_node.tags | join(', ') if updated_node.tags else '无' }}
+
+## 进一步操作提示
+你可以使用 `get_node_info` 工具来确认更新后的详细信息。
+{% else %}
+{{ error_prompt }}
+{% endif %}
+"""
+"""
+Args:
+    success (bool): 操作是否成功。
+    graph_name (str): 当前图谱的名称。
+    node_id (str): 被更新的节点ID。
+    original_node (Knowledge_Node): 更新前的节点对象。
+    updated_node (Knowledge_Node): 更新后的节点对象。
+    error_prompt (str): 如果失败，则传递由 PROMPT_OPERATION_ERROR 生成的错误提示。
+"""
+
+PROMPT_UPDATE_EDGE = """
+{% if success %}
+## 边更新成功
+
+在知识图谱 **{{ graph_name }}** 中，边 **{{ edge_id }}** 已成功更新。
+
+**更新前:**
+- **标题:** {{ original_edge.title }}
+- **描述:** {{ original_edge.description or '无' }}
+
+**更新后:**
+- **标题:** {{ updated_edge.title }}
+- **描述:** {{ updated_edge.description or '无' }}
+
+## 进一步操作提示
+你可以使用 `get_edge_info` 工具来确认更新后的详细信息。
+{% else %}
+{{ error_prompt }}
+{% endif %}
+"""
+"""
+Args:
+    success (bool): 操作是否成功。
+    graph_name (str): 当前图谱的名称。
+    edge_id (str): 被更新的边ID。
+    original_edge (Knowledge_Edge): 更新前的边对象。
+    updated_edge (Knowledge_Edge): 更新后的边对象。
+    error_prompt (str): 如果失败，则传递由 PROMPT_OPERATION_ERROR 生成的错误提示。
+"""
+
 PROMPT_BATCH_ADD = """
 {% if success %}
 ## 批量添加成功

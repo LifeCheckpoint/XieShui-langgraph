@@ -87,6 +87,38 @@ class Knowledge_Graph(BaseModel):
             end_node.in_edge.remove(edge.id)
             
         del self.edges[edge_id]
+        
+    def update_node(self, node_id: str, title: Optional[str] = None, description: Optional[str] = None, tags: Optional[List[str]] = None):
+        """
+        更新一个已存在节点的信息。
+        ID 和边列表不能通过此方法修改。
+        """
+        if node_id not in self.nodes:
+            raise ValueError(f"节点 ID {node_id} 不存在")
+        
+        node = self.nodes[node_id]
+        
+        if title is not None:
+            node.title = title
+        if description is not None:
+            node.description = description
+        if tags is not None:
+            node.tags = tags
+
+    def update_edge(self, edge_id: str, title: Optional[str] = None, description: Optional[str] = None):
+        """
+        更新一个已存在边的信息。
+        ID 和连接的节点不能通过此方法修改。
+        """
+        if edge_id not in self.edges:
+            raise ValueError(f"边 ID {edge_id} 不存在")
+            
+        edge = self.edges[edge_id]
+        
+        if title is not None:
+            edge.title = title
+        if description is not None:
+            edge.description = description
 
     class Config:
         """Pydantic 配置，允许模型中包含非BaseModel类型的属性。"""
