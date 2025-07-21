@@ -614,7 +614,7 @@ PROMPT_SUMMARIZE_GRAPH = """
 | 边ID | 边标题 | 从 ({{ edge.start_node.title }}) | 到 ({{ edge.end_node.title }}) |
 |---|---|---|---|
 {% for edge in sampled_edges %}
-| {{ edge.id }} | {{ edge.title }} | {{ edge.start_node_id }} | {{ edge.end_node_id }} |
+| {{ edge.id }} | {{ edge.title }} | {{ edge.start_node_id }} ({{ edge.start_node.title }}) | {{ edge.end_node_id }} ({{ edge.end_node.title }}) |
 {% endfor %}
 {% else %}
 - 图中暂无边。

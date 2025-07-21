@@ -236,11 +236,16 @@ class Knowledge_Graph(BaseModel):
         with open(filepath, 'r', encoding='utf-8') as f:
             data = json.load(f)
         
+        # 创建图谱实例并设置名称
         graph = cls()
+        graph.name = data.get('name', 'Knowledge Graph')
 
-        # 1. 加载所有节点
+        # 1. 加载所有节点，先清空它们的in_edge和out_edge列表
         for node_id, node_data in data.get('nodes', {}).items():
             node = Knowledge_Node(**node_data)
+            # 清空边列表，稍后会重新填充
+            node.in_edge = []
+            node.out_edge = []
             graph.nodes[node.id] = node
         
         # 2. 加载所有边，并重新建立节点引用和节点的in_edge/out_edge列表
@@ -263,9 +268,6 @@ class Knowledge_Graph(BaseModel):
             graph.edges[edge.id] = edge
             
             # 重新填充节点的 in_edge 和 out_edge 列表
-            # 注意：在 add_edge 方法中已经处理了这些，但 load_from_file 是直接构建，需要手动填充
-            # 实际上，如果 load_from_file 内部调用 add_edge，则这些行可以省略
-            # 但为了避免 add_edge 的重复检查，这里直接填充更高效
             graph.nodes[edge.start_node_id].out_edge.append(edge.id)
             graph.nodes[edge.end_node_id].in_edge.append(edge.id)
 
@@ -458,7 +460,7 @@ class Knowledge_Graph(BaseModel):
         if start_node_id not in self.nodes:
             raise ValueError(f"起始节点 ID {start_node_id} 不存在")
  
-        subgraph = Knowledge_Graph()
+        subgraph = Knowledge_Graph(name=f"{self.name}_subgraph")
         
         # 使用BFS进行遍历
         queue = deque([(start_node_id, 0)]) # (node_id, current_depth)
@@ -485,9 +487,11 @@ class Knowledge_Graph(BaseModel):
                     subgraph.add_node(self.nodes[neighbor_id].model_copy(deep=True))
                     queue.append((neighbor_id, depth + 1))
                 
-                # 只要边在扩散路径上，就将其加入子图
-                if edge.id not in subgraph.edges:
-                    # 复制边对象，并手动链接到子图中的节点
+                # 只要边在扩散路径上，且两个节点都在子图中，就将其加入子图
+                if (edge.id not in subgraph.edges and 
+                    edge.start_node_id in subgraph.nodes and 
+                    edge.end_node_id in subgraph.nodes):
+                    # 复制边对象
                     new_edge = edge.model_copy(deep=True)
                     subgraph.add_edge(new_edge)
  

@@ -19,8 +19,6 @@ class KnowledgeGraphIntegration:
 
     返回消息可直接与 LLMs 进行交互
     """
-    graph_list: List[Knowledge_Graph] = []
-    current_graph: Optional[Knowledge_Graph] = None
 
     def __repr__(self):
         return "KnowledgeGraphIntegration"
@@ -48,6 +46,8 @@ class KnowledgeGraphIntegration:
         """
         初始化 KnowledgeGraphIntegration
         """
+        self.graph_list: List[Knowledge_Graph] = []
+        self.current_graph: Optional[Knowledge_Graph] = None
         self.reload_graphs(graph_dir)
 
     def reload_graphs(self, graph_dir: Optional[str | Path] = None) -> str:
