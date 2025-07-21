@@ -335,7 +335,7 @@ class Knowledge_Graph(BaseModel):
  
     def search_nodes_by_keyword(self, keyword: str, case_sensitive: bool = False) -> List[Knowledge_Node]:
         """
-        根据关键词搜索节点。关键词会匹配节点的 title 和 description。
+        根据关键词搜索节点。关键词会匹配节点的 title、description 和 tags。
         
         Args:
             keyword (str): 要搜索的关键词。
@@ -353,7 +353,9 @@ class Knowledge_Graph(BaseModel):
             if node.description:
                 description = node.description if case_sensitive else node.description.lower()
             
-            if search_term in title or search_term in description:
+            tags_content = " ".join(node.tags) if case_sensitive else " ".join(tag.lower() for tag in node.tags)
+
+            if search_term in title or search_term in description or search_term in tags_content:
                 results.append(node)
         return results
  
@@ -379,6 +381,35 @@ class Knowledge_Graph(BaseModel):
             
             if search_term in title or search_term in description:
                 results.append(edge)
+        return results
+
+    def search_nodes_by_tag(self, tags: List[str], mode: str = 'AND', case_sensitive: bool = False) -> List[Knowledge_Node]:
+        """
+        根据一个或多个标签搜索节点。
+
+        Args:
+            tags (List[str]): 要搜索的标签列表。
+            mode (str): 搜索模式，'AND' 表示节点必须包含所有标签，'OR' 表示节点包含任一标签即可。默认为 'AND'。
+            case_sensitive (bool): 是否区分大小写。默认为False。
+
+        Returns:
+            List[Knowledge_Node]: 匹配的节点对象列表。
+        """
+        if not tags:
+            return []
+
+        results = []
+        search_tags = set(tags) if case_sensitive else set(tag.lower() for tag in tags)
+
+        for node in self.nodes.values():
+            node_tags = set(node.tags) if case_sensitive else set(tag.lower() for tag in node.tags)
+
+            if mode.upper() == 'AND':
+                if search_tags.issubset(node_tags):
+                    results.append(node)
+            elif mode.upper() == 'OR':
+                if not search_tags.isdisjoint(node_tags):
+                    results.append(node)
         return results
  
     def get_k_hop_neighborhood(self, start_node_id: str, k: int) -> Knowledge_Graph:
@@ -430,3 +461,23 @@ class Knowledge_Graph(BaseModel):
  
         return subgraph
 
+
+
+    def get_top_k_tags(self, top_k: int = 10) -> List[Tuple[str, int]]:
+        """
+        统计所有节点中最常出现的标签。
+
+        Args:
+            top_k (int): 返回排名前 k 的标签。
+
+        Returns:
+            List[Tuple[str, int]]: 一个元组列表，每个元组包含标签和其出现次数。
+        """
+        from collections import Counter
+        
+        all_tags = [tag for node in self.nodes.values() for tag in node.tags]
+        if not all_tags:
+            return []
+            
+        tag_counts = Counter(all_tags)
+        return tag_counts.most_common(top_k)

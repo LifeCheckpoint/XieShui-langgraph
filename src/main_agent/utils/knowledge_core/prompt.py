@@ -36,6 +36,7 @@ PROMPT_STR = """
 - 出度最高前10节点: {{ top_out_degree_nodes }}
 - 介数中心性最高前10节点: {{ top_betweenness_centrality_nodes }}
 - 接近中心性最高前10节点: {{ top_closeness_centrality_nodes }}
+- 最常出现的10个标签: {{ top_tags }}
 
 ## 进一步操作提示
 你可以通过一系列工具与知识图谱进行交互，建议全面了解图谱的信息与结构后执行操作
@@ -139,6 +140,7 @@ PROMPT_ADD_NODE = """
 - ID: {{ node.id }}
 - 标题: {{ node.title }}
 - 描述: {{ node.description or '无' }}
+- 标签: {{ node.tags | join(', ') if node.tags else '无' }}
 
 ## 进一步操作提示
 你可以继续添加节点、添加边，或使用 `get_node_info` 工具查看节点详细信息。
@@ -189,6 +191,7 @@ PROMPT_GET_NODE = """
 - ID: {{ node.id }}
 - 标题: {{ node.title }}
 - 描述: {{ node.description or '无' }}
+- 标签: {{ node.tags | join(', ') if node.tags else '无' }}
 - 入边数量: {{ node.in_edge | length }}
 - 出边数量: {{ node.out_edge | length }}
 
@@ -345,6 +348,7 @@ PROMPT_FIND_PATH = """
   - **入度:** {{ node_info.in_degree }}
   - **出度:** {{ node_info.out_degree }}
   - **中心度:** {{ "%.4f"|format(node_info.centrality) }}
+  - **标签:** {{ node_info.node.tags | join(', ') if node_info.node.tags else '无' }}
   {% if with_description and node_info.node.description %}
   - **描述:** {{ node_info.node.description }}
   {% endif %}
@@ -466,10 +470,10 @@ PROMPT_SAMPLE_NODES = """
 在知识图谱 **{{ graph_name }}** 中，随机采样了 **{{ count }}** 个节点：
 
 {% if sampled_nodes %}
-| 节点 ID | 节点标题 | 描述 |
-|---|---|---|
+| 节点 ID | 节点标题 | 描述 | 标签 |
+|---|---|---|---|
 {% for node in sampled_nodes %}
-| {{ node.id }} | {{ node.title }} | {{ node.description or '无' }} |
+| {{ node.id }} | {{ node.title }} | {{ node.description or '无' }} | {{ node.tags | join(', ') if node.tags else '无' }} |
 {% endfor %}
 {% else %}
 图中没有可供采样的节点。
@@ -531,6 +535,17 @@ PROMPT_SUMMARIZE_GRAPH = """
 - 无法计算或暂无高中心性节点。
 {% endif %}
 
+**最常出现的标签:**
+{% if top_tags %}
+| 标签 | 出现次数 |
+|---|---|
+{% for tag, count in top_tags %}
+| {{ tag }} | {{ count }} |
+{% endfor %}
+{% else %}
+- 图中暂无标签。
+{% endif %}
+
 **随机边示例:**
 {% if sampled_edges %}
 | 边ID | 边标题 | 从 ({{ edge.start_node.title }}) | 到 ({{ edge.end_node.title }}) |
@@ -558,5 +573,38 @@ Args:
     top_out_degree_nodes (List[Tuple[Knowledge_Node, int]]): 出度最高的节点列表。
     top_betweenness_centrality_nodes (List[Tuple[Knowledge_Node, float]]): 介数中心性最高的节点列表。
     sampled_edges (List[Knowledge_Edge]): 随机采样的边列表。
+    error_prompt (str): 如果失败，则传递由 PROMPT_OPERATION_ERROR 生成的错误提示。
+"""
+
+PROMPT_SEARCH_NODES_BY_TAG = """
+{% if success %}
+## 按标签搜索节点成功
+
+在知识图谱 **{{ graph_name }}** 中，使用标签 `{{ tags | join(', ') }}` (模式: {{ mode }}) 搜索到 **{{ count }}** 个节点。
+
+{% if nodes %}
+| 节点 ID | 节点标题 | 标签 |
+|---|---|---|
+{% for node in nodes %}
+| {{ node.id }} | {{ node.title }} | {{ node.tags | join(', ') }} |
+{% endfor %}
+{% else %}
+没有找到匹配的节点。
+{% endif %}
+
+## 进一步操作提示
+你可以使用 `get_node_info` 查看具体节点的详细信息。
+{% else %}
+{{ error_prompt }}
+{% endif %}
+"""
+"""
+Args:
+    success (bool): 操作是否成功。
+    graph_name (str): 当前图谱的名称。
+    tags (List[str]): 用于搜索的标签列表。
+    mode (str): 搜索模式 ('AND' 或 'OR')。
+    count (int): 找到的节点数量。
+    nodes (List[Knowledge_Node]): 匹配的节点列表。
     error_prompt (str): 如果失败，则传递由 PROMPT_OPERATION_ERROR 生成的错误提示。
 """

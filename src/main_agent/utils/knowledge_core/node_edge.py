@@ -10,6 +10,7 @@ class Knowledge_Node(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
     title: str = Field(default="Node")
     description: Optional[str] = Field(default=None)
+    tags: List[str] = Field(default_factory=list) # 节点标签
     in_edge: List[str] = Field(default_factory=list)  # 入边列表
     out_edge: List[str] = Field(default_factory=list)  # 出边列表
 

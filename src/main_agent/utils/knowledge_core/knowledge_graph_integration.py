@@ -41,6 +41,7 @@ class KnowledgeGraphIntegration:
                 "top_out_degree_nodes": node_rank_title(self.current_graph.get_high_out_degree_nodes(10)),
                 "top_betweenness_centrality_nodes": node_rank_title(self.current_graph.get_high_betweenness_centrality_nodes(10)),
                 "top_closeness_centrality_nodes": node_rank_title(self.current_graph.get_high_closeness_centrality_nodes(10)),
+                "top_tags": self.current_graph.get_top_k_tags(10),
             })
 
     def __init__(self, graph_dir: Optional[str | Path] = None):
@@ -123,7 +124,7 @@ class KnowledgeGraphIntegration:
             "graph_list": self.graph_list
         })
 
-    def add_node_to_current_graph(self, title: str, description: Optional[str] = None, id: Optional[str] = None) -> str:
+    def add_node_to_current_graph(self, title: str, description: Optional[str] = None, id: Optional[str] = None, tags: Optional[List[str]] = None) -> str:
         """
         向当前选中的图谱中添加一个新节点。
 
@@ -131,6 +132,7 @@ class KnowledgeGraphIntegration:
             title (str): 节点的标题。
             description (Optional[str]): 节点的描述。
             id (Optional[str], optional): 节点的ID。如果未提供，将自动生成。默认为 None。
+            tags (Optional[List[str]], optional): 节点的标签列表。默认为 None。
 
         Returns:
             str: 一个为LLM格式化的、包含操作结果的字符串。
@@ -142,6 +144,8 @@ class KnowledgeGraphIntegration:
             node_data = {"title": title, "description": description}
             if id:
                 node_data["id"] = id
+            if tags:
+                node_data["tags"] = tags
             node = Knowledge_Node(**node_data)
             self.current_graph.add_node(node)
             return jinja2.Template(PROMPT_ADD_NODE).render({
@@ -340,6 +344,39 @@ class KnowledgeGraphIntegration:
                 "error_prompt": error_prompt
             })
 
+    def search_nodes_by_tag(self, tags: List[str], mode: str = 'AND', case_sensitive: bool = False) -> str:
+        """
+        根据一个或多个标签搜索节点。
+
+        Args:
+            tags (List[str]): 要搜索的标签列表。
+            mode (str): 搜索模式，'AND' 或 'OR'。
+            case_sensitive (bool): 是否区分大小写。
+
+        Returns:
+            str: 格式化后的搜索结果。
+        """
+        if not self.current_graph:
+            return jinja2.Template(PROMPT_NO_CURRENT_GRAPH).render()
+
+        try:
+            found_nodes = self.current_graph.search_nodes_by_tag(tags, mode, case_sensitive)
+            return jinja2.Template(PROMPT_SEARCH_NODES_BY_TAG).render({
+                "success": True,
+                "graph_name": self.current_graph.name,
+                "tags": tags,
+                "mode": mode,
+                "count": len(found_nodes),
+                "nodes": found_nodes
+            })
+        except Exception as e:
+            error_prompt = jinja2.Template(PROMPT_OPERATION_ERROR).render({"error_message": str(e)})
+            return jinja2.Template(PROMPT_SEARCH_NODES_BY_TAG).render({
+                "success": False,
+                "graph_name": self.current_graph.name,
+                "error_prompt": error_prompt
+            })
+
     def find_path(self, start_node_id: str, end_node_id: str, with_description: bool = False, with_edge_description: bool = False) -> str:
         """
         查找两个节点之间的最短路径，并返回包含路径信息的prompt。
@@ -480,6 +517,7 @@ class KnowledgeGraphIntegration:
             - "title": str (可选, 默认为 "Node")
             - "description": str (可选)
             - "id": str (可选, 如果不提供会自动生成)
+            - "tags": List[str] (可选)
         - "edges" 是一个边对象列表。
           - 每个边对象必须包含:
             - "start_node_id": str (必需)
@@ -495,7 +533,8 @@ class KnowledgeGraphIntegration:
             {
               "id": "node_1",
               "title": "大语言模型",
-              "description": "一种先进的人工智能模型"
+              "description": "一种先进的人工智能模型",
+              "tags": ["AI", "LLM"]
             },
             {
               "id": "node_2",
@@ -650,7 +689,8 @@ class KnowledgeGraphIntegration:
                 "top_in_degree_nodes": top_in_degree_nodes,
                 "top_out_degree_nodes": top_out_degree_nodes,
                 "top_betweenness_centrality_nodes": top_betweenness_centrality_nodes,
-                "sampled_edges": sampled_edges
+                "sampled_edges": sampled_edges,
+                "top_tags": self.current_graph.get_top_k_tags(max_nodes)
             })
         except Exception as e:
             error_prompt = jinja2.Template(PROMPT_OPERATION_ERROR).render({"error_message": str(e)})
