@@ -89,6 +89,29 @@ Args:
     graph (KnowledgeGraph): 新添加的图谱
 """
 
+PROMPT_SET_GRAPH_FAILED = """
+## 切换图谱失败
+未能找到名为 `{{ name }}` 的知识图谱。
+
+**当前可用的图谱列表:**
+{% if graph_list %}
+{% for graph in graph_list %}
+- `{{ graph.name }}`
+{% endfor %}
+{% else %}
+- 当前没有已加载的图谱。
+{% endif %}
+
+## 进一步操作提示
+- 请检查你输入的名称是否正确。
+- 如果你认为图谱文件存在但未加载，可以尝试使用 `reload_graphs` 工具重新加载所有图谱。
+"""
+"""
+Args:
+    name (str): 尝试切换的图谱名称。
+    graph_list (List[KnowledgeGraph]): 当前已加载的图谱列表。
+"""
+
 PROMPT_NO_CURRENT_GRAPH = """
 ## 操作失败
 错误: 当前未选择任何知识图谱。
@@ -346,7 +369,7 @@ PROMPT_FIND_PATH = """
 在知识图谱 **{{ graph_name }}** 中，无法找到从节点 **{{ start_node_id }}** 到 **{{ end_node_id }}** 的路径。
 
 ## 进一步操作提示
-请检查节点ID是否正确，或者尝试使用 `list_nodes` 工具来查看所有节点。
+请检查节点ID是否正确，或者尝试使用 `get_all_node` 工具来查看所有节点。
 {% elif error_prompt %}
 {{ error_prompt }}
 {% endif %}
@@ -520,8 +543,7 @@ PROMPT_SUMMARIZE_GRAPH = """
 {% endif %}
 
 ## 进一步操作提示
-这是一个图谱内容的快速概览，你可以借此了解图谱基本信息。
-请注意，图谱可能包含更多节点和边，建议使用其他工具进行深入研究。
+这是一个图谱内容的快速概览。你可以使用 `get_all_node` 来查看所有节点，或使用 `get_node_info` 来深入了解特定节点。
 {% else %}
 {{ error_prompt }}
 {% endif %}

@@ -103,6 +103,26 @@ class KnowledgeGraphIntegration:
             print(f"Error adding graph: {e}")
             return f"添加图谱失败，错误原因: {e}"
 
+    def set_current_graph(self, name: str) -> str:
+        """
+        设置当前操作的知识图谱。
+
+        Args:
+            name (str): 要设置为当前图谱的名称。
+
+        Returns:
+            str: 操作结果的提示信息。
+        """
+        for graph in self.graph_list:
+            if graph.name == name:
+                self.current_graph = graph
+                return f"已成功切换到知识图谱: {name}"
+        
+        return jinja2.Template(PROMPT_SET_GRAPH_FAILED).render({
+            "name": name,
+            "graph_list": self.graph_list
+        })
+
     def add_node_to_current_graph(self, title: str, description: Optional[str] = None, id: Optional[str] = None) -> str:
         """
         向当前选中的图谱中添加一个新节点。
