@@ -7,9 +7,9 @@ import networkx as nx
 import json
 import jinja2
 
-from src.main_agent.utils.knowledge_core.node_edge import Knowledge_Node, Knowledge_Edge
-from src.main_agent.utils.knowledge_core.knowledge_graph import Knowledge_Graph
-from src.main_agent.utils.knowledge_core.prompt import *
+from src.graph_manager.knowledge_core.node_edge import Knowledge_Node, Knowledge_Edge
+from src.graph_manager.knowledge_core.knowledge_graph import Knowledge_Graph
+from src.graph_manager.knowledge_core.prompt import *
 
 # 需要进行持久状态留存
 

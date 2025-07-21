@@ -6,7 +6,7 @@ from collections import deque
 import networkx as nx
 import json
 
-from src.main_agent.utils.knowledge_core.node_edge import Knowledge_Node, Knowledge_Edge
+from src.graph_manager.knowledge_core.node_edge import Knowledge_Node, Knowledge_Edge
 
 # 知识图谱定义
 class Knowledge_Graph(BaseModel):
