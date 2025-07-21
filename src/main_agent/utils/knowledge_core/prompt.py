@@ -466,3 +466,75 @@ Args:
     sampled_nodes (List[Knowledge_Node]): 采样到的节点列表。
     error_prompt (str): 如果失败，则传递由 PROMPT_OPERATION_ERROR 生成的错误提示。
 """
+
+PROMPT_SUMMARIZE_GRAPH = """
+{% if success %}
+## 知识图谱内容摘要: {{ graph_name }}
+
+**核心统计:**
+- **节点总数:** {{ node_count }}
+- **边总数:** {{ edge_count }}
+
+**核心节点 (基于入度):**
+{% if top_in_degree_nodes %}
+| 节点ID | 节点标题 | 入度 |
+|---|---|---|
+{% for node, degree in top_in_degree_nodes %}
+| {{ node.id }} | {{ node.title }} | {{ degree }} |
+{% endfor %}
+{% else %}
+- 暂无高入度节点。
+{% endif %}
+
+**核心节点 (基于出度):**
+{% if top_out_degree_nodes %}
+| 节点ID | 节点标题 | 出度 |
+|---|---|---|
+{% for node, degree in top_out_degree_nodes %}
+| {{ node.id }} | {{ node.title }} | {{ degree }} |
+{% endfor %}
+{% else %}
+- 暂无高出度节点。
+{% endif %}
+
+**核心节点 (基于介数中心性):**
+{% if top_betweenness_centrality_nodes %}
+| 节点ID | 节点标题 | 中心性得分 |
+|---|---|---|
+{% for node, score in top_betweenness_centrality_nodes %}
+| {{ node.id }} | {{ node.title }} | {{ "%.4f"|format(score) }} |
+{% endfor %}
+{% else %}
+- 无法计算或暂无高中心性节点。
+{% endif %}
+
+**随机边示例:**
+{% if sampled_edges %}
+| 边ID | 边标题 | 从 ({{ edge.start_node.title }}) | 到 ({{ edge.end_node.title }}) |
+|---|---|---|---|
+{% for edge in sampled_edges %}
+| {{ edge.id }} | {{ edge.title }} | {{ edge.start_node_id }} | {{ edge.end_node_id }} |
+{% endfor %}
+{% else %}
+- 图中暂无边。
+{% endif %}
+
+## 进一步操作提示
+这是一个图谱内容的快速概览，你可以借此了解图谱基本信息。
+请注意，图谱可能包含更多节点和边，建议使用其他工具进行深入研究。
+{% else %}
+{{ error_prompt }}
+{% endif %}
+"""
+"""
+Args:
+    success (bool): 操作是否成功。
+    graph_name (str): 当前图谱的名称。
+    node_count (int): 节点总数。
+    edge_count (int): 边总数。
+    top_in_degree_nodes (List[Tuple[Knowledge_Node, int]]): 入度最高的节点列表。
+    top_out_degree_nodes (List[Tuple[Knowledge_Node, int]]): 出度最高的节点列表。
+    top_betweenness_centrality_nodes (List[Tuple[Knowledge_Node, float]]): 介数中心性最高的节点列表。
+    sampled_edges (List[Knowledge_Edge]): 随机采样的边列表。
+    error_prompt (str): 如果失败，则传递由 PROMPT_OPERATION_ERROR 生成的错误提示。
+"""

@@ -578,3 +578,64 @@ class KnowledgeGraphIntegration:
                 "graph_name": self.current_graph.name,
                 "error_prompt": error_prompt
             })
+
+    def get_all_node(self) -> str:
+        """
+        获取当前图谱中所有节点的简要信息（ID和标题）。
+        """
+        if not self.current_graph:
+            return jinja2.Template(PROMPT_NO_CURRENT_GRAPH).render()
+        
+        nodes = self.current_graph.get_all_node()
+        node_briefs = [{"id": node.id, "title": node.title} for node in nodes]
+        
+        # 使用json.dumps来格式化输出
+        return json.dumps(node_briefs, indent=4, ensure_ascii=False)
+
+    def get_all_edge(self) -> str:
+        """
+        获取当前图谱中所有边的简要信息（ID和标题）。
+        """
+        if not self.current_graph:
+            return jinja2.Template(PROMPT_NO_CURRENT_GRAPH).render()
+            
+        edges = self.current_graph.get_all_edge()
+        edge_briefs = [{"id": edge.id, "title": edge.title} for edge in edges]
+        
+        return json.dumps(edge_briefs, indent=4, ensure_ascii=False)
+
+    def summarize_graph_content(self, max_nodes: int = 10, max_edges: int = 10) -> str:
+        """
+        通过随机采样，为LLM提供当前知识图谱的高层次摘要。
+        """
+        if not self.current_graph:
+            return jinja2.Template(PROMPT_NO_CURRENT_GRAPH).render()
+
+        try:
+            node_count = len(self.current_graph.nodes)
+            edge_count = len(self.current_graph.edges)
+
+            top_in_degree_nodes = self.current_graph.get_high_in_degree_nodes(max_nodes)
+            top_out_degree_nodes = self.current_graph.get_high_out_degree_nodes(max_nodes)
+            top_betweenness_centrality_nodes = self.current_graph.get_high_betweenness_centrality_nodes(max_nodes)
+
+            all_edges = self.current_graph.get_all_edge()
+            sampled_edges = random.sample(all_edges, min(len(all_edges), max_edges))
+
+            return jinja2.Template(PROMPT_SUMMARIZE_GRAPH).render({
+                "success": True,
+                "graph_name": self.current_graph.name,
+                "node_count": node_count,
+                "edge_count": edge_count,
+                "top_in_degree_nodes": top_in_degree_nodes,
+                "top_out_degree_nodes": top_out_degree_nodes,
+                "top_betweenness_centrality_nodes": top_betweenness_centrality_nodes,
+                "sampled_edges": sampled_edges
+            })
+        except Exception as e:
+            error_prompt = jinja2.Template(PROMPT_OPERATION_ERROR).render({"error_message": str(e)})
+            return jinja2.Template(PROMPT_SUMMARIZE_GRAPH).render({
+                "success": False,
+                "graph_name": self.current_graph.name,
+                "error_prompt": error_prompt
+            })
