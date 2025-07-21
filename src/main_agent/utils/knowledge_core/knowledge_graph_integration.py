@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
 from typing import Dict, List, Optional, Tuple, Callable
-from collections import deque
 from pathlib import Path
+import random
 import networkx as nx
 import json
 import jinja2
@@ -104,13 +103,14 @@ class KnowledgeGraphIntegration:
             print(f"Error adding graph: {e}")
             return f"添加图谱失败，错误原因: {e}"
 
-    def add_node_to_current_graph(self, title: str, description: Optional[str] = None) -> str:
+    def add_node_to_current_graph(self, title: str, description: Optional[str] = None, id: Optional[str] = None) -> str:
         """
         向当前选中的图谱中添加一个新节点。
 
         Args:
             title (str): 节点的标题。
             description (Optional[str]): 节点的描述。
+            id (Optional[str], optional): 节点的ID。如果未提供，将自动生成。默认为 None。
 
         Returns:
             str: 一个为LLM格式化的、包含操作结果的字符串。
@@ -119,7 +119,10 @@ class KnowledgeGraphIntegration:
             return jinja2.Template(PROMPT_NO_CURRENT_GRAPH).render()
 
         try:
-            node = Knowledge_Node(title=title, description=description)
+            node_data = {"title": title, "description": description}
+            if id:
+                node_data["id"] = id
+            node = Knowledge_Node(**node_data)
             self.current_graph.add_node(node)
             return jinja2.Template(PROMPT_ADD_NODE).render({
                 "success": True,
@@ -134,7 +137,7 @@ class KnowledgeGraphIntegration:
                 "error_prompt": error_prompt
             })
 
-    def add_edge_to_current_graph(self, start_node_id: str, end_node_id: str, title: str, description: Optional[str] = None) -> str:
+    def add_edge_to_current_graph(self, start_node_id: str, end_node_id: str, title: str, description: Optional[str] = None, id: Optional[str] = None) -> str:
         """
         向当前选中的图谱中添加一条新边。
 
@@ -143,6 +146,7 @@ class KnowledgeGraphIntegration:
             end_node_id (str): 结束节点的ID。
             title (str): 边的标题。
             description (Optional[str]): 边的描述。
+            id (Optional[str], optional): 边的ID。如果未提供，将自动生成。默认为 None。
 
         Returns:
             str: 一个为LLM格式化的、包含操作结果的字符串。
@@ -151,12 +155,15 @@ class KnowledgeGraphIntegration:
             return jinja2.Template(PROMPT_NO_CURRENT_GRAPH).render()
 
         try:
-            edge = Knowledge_Edge(
-                start_node_id=start_node_id,
-                end_node_id=end_node_id,
-                title=title,
-                description=description
-            )
+            edge_data = {
+                "start_node_id": start_node_id,
+                "end_node_id": end_node_id,
+                "title": title,
+                "description": description
+            }
+            if id:
+                edge_data["id"] = id
+            edge = Knowledge_Edge(**edge_data)
             self.current_graph.add_edge(edge)
             return jinja2.Template(PROMPT_ADD_EDGE).render({
                 "success": True,
@@ -310,5 +317,264 @@ class KnowledgeGraphIntegration:
                 "not_found": False,
                 "graph_name": self.current_graph.name,
                 "node_id": node_id,
+                "error_prompt": error_prompt
+            })
+
+    def find_path(self, start_node_id: str, end_node_id: str, with_description: bool = False, with_edge_description: bool = False) -> str:
+        """
+        查找两个节点之间的最短路径，并返回包含路径信息的prompt。
+
+        Args:
+            start_node_id (str): 起始节点的ID。
+            end_node_id (str): 结束节点的ID。
+            with_description (bool, optional): 是否在结果中包含路径上节点的描述。默认为 False。
+            with_edge_description (bool, optional): 是否在结果中包含路径上边的描述。默认为 False。
+
+        Returns:
+            str: 渲染后的prompt字符串。
+        """
+        if not self.current_graph:
+            return jinja2.Template(PROMPT_NO_CURRENT_GRAPH).render()
+
+        try:
+            path_node_ids = self.current_graph.find_path(start_node_id, end_node_id)
+
+            if not path_node_ids:
+                return jinja2.Template(PROMPT_FIND_PATH).render({
+                    "success": False,
+                    "not_found": True,
+                    "graph_name": self.current_graph.name,
+                    "start_node_id": start_node_id,
+                    "end_node_id": end_node_id
+                })
+
+            G = self.current_graph._to_networkx()
+            centrality = nx.betweenness_centrality(G, normalized=True)
+
+            path_nodes_info = []
+            for node_id in path_node_ids:
+                node = self.current_graph.get_node(node_id)
+                path_nodes_info.append({
+                    "node": node,
+                    "in_degree": G.in_degree(node_id),
+                    "out_degree": G.out_degree(node_id),
+                    "centrality": centrality.get(node_id, 0.0)
+                })
+
+            path_edges = []
+            for i in range(len(path_node_ids) - 1):
+                u_id = path_node_ids[i]
+                v_id = path_node_ids[i+1]
+                # Find the edge(s) connecting u and v
+                for edge in self.current_graph.get_out_edge(u_id):
+                    if edge.end_node_id == v_id:
+                        path_edges.append(edge)
+                        break # Assuming one edge, for simplicity
+
+            return jinja2.Template(PROMPT_FIND_PATH).render({
+                "success": True,
+                "graph_name": self.current_graph.name,
+                "start_node_id": start_node_id,
+                "end_node_id": end_node_id,
+                "path_nodes": path_nodes_info,
+                "path_edges": path_edges,
+                "with_description": with_description,
+                "with_edge_description": with_edge_description
+            })
+
+        except ValueError as e:
+            error_prompt = jinja2.Template(PROMPT_OPERATION_ERROR).render({"error_message": str(e)})
+            return jinja2.Template(PROMPT_FIND_PATH).render({
+                "success": False,
+                "not_found": False,
+                "graph_name": self.current_graph.name,
+                "start_node_id": start_node_id,
+                "end_node_id": end_node_id,
+                "error_prompt": error_prompt
+            })
+
+    def delete_items(self, node_ids: Optional[List[str]] = None, edge_ids: Optional[List[str]] = None) -> str:
+        """
+        通过ID批量删除节点和边。
+
+        Args:
+            node_ids (Optional[List[str]], optional): 要删除的节点ID列表。默认为 None。
+            edge_ids (Optional[List[str]], optional): 要删除的边ID列表。默认为 None。
+
+        Returns:
+            str: 渲染后的prompt字符串。
+        """
+        if not self.current_graph:
+            return jinja2.Template(PROMPT_NO_CURRENT_GRAPH).render()
+
+        deleted_nodes_count = 0
+        deleted_edges_count = 0
+        not_found_nodes = []
+        not_found_edges = []
+
+        try:
+            if node_ids:
+                for node_id in node_ids:
+                    try:
+                        self.current_graph.remove_node(node_id)
+                        deleted_nodes_count += 1
+                    except ValueError:
+                        not_found_nodes.append(node_id)
+            
+            if edge_ids:
+                for edge_id in edge_ids:
+                    try:
+                        self.current_graph.remove_edge(edge_id)
+                        deleted_edges_count += 1
+                    except ValueError:
+                        not_found_edges.append(edge_id)
+
+            return jinja2.Template(PROMPT_DELETE_ITEMS).render({
+                "success": True,
+                "graph_name": self.current_graph.name,
+                "deleted_nodes_count": deleted_nodes_count,
+                "deleted_edges_count": deleted_edges_count,
+                "not_found_nodes": not_found_nodes,
+                "not_found_edges": not_found_edges
+            })
+
+        except Exception as e:
+            error_prompt = jinja2.Template(PROMPT_OPERATION_ERROR).render({"error_message": str(e)})
+            return jinja2.Template(PROMPT_DELETE_ITEMS).render({
+                "success": False,
+                "graph_name": self.current_graph.name,
+                "error_prompt": error_prompt
+            })
+
+    def batch_add_from_json(self, json_data: str) -> str:
+        """
+        通过JSON数据批量添加节点和边。
+
+        Args:
+            json_data (str): 包含节点和边列表的JSON字符串。
+
+        JSON格式要求:
+        - 顶层是一个对象，包含 "nodes" 和/或 "edges" 键。
+        - "nodes" 是一个节点对象列表。
+          - 每个节点对象必须包含:
+            - "title": str (可选, 默认为 "Node")
+            - "description": str (可选)
+            - "id": str (可选, 如果不提供会自动生成)
+        - "edges" 是一个边对象列表。
+          - 每个边对象必须包含:
+            - "start_node_id": str (必需)
+            - "end_node_id": str (必需)
+            - "title": str (可选, 默认为 "Edge")
+            - "description": str (可选)
+            - "id": str (可选, 如果不提供会自动生成)
+
+        JSON示例:
+        ```json
+        {
+          "nodes": [
+            {
+              "id": "node_1",
+              "title": "大语言模型",
+              "description": "一种先进的人工智能模型"
+            },
+            {
+              "id": "node_2",
+              "title": "知识图谱"
+            }
+          ],
+          "edges": [
+            {
+              "start_node_id": "node_1",
+              "end_node_id": "node_2",
+              "title": "应用于"
+            }
+          ]
+        }
+        ```
+
+        Returns:
+            str: 渲染后的prompt字符串。
+        """
+        if not self.current_graph:
+            return jinja2.Template(PROMPT_NO_CURRENT_GRAPH).render()
+
+        added_nodes_count = 0
+        added_edges_count = 0
+        errors = []
+
+        try:
+            data = json.loads(json_data)
+            
+            # Add nodes first
+            if 'nodes' in data and isinstance(data['nodes'], list):
+                for node_data in data['nodes']:
+                    try:
+                        node = Knowledge_Node(**node_data)
+                        self.current_graph.add_node(node)
+                        added_nodes_count += 1
+                    except (ValueError, TypeError) as e:
+                        errors.append({"item": str(node_data), "message": str(e)})
+
+            # Then add edges
+            if 'edges' in data and isinstance(data['edges'], list):
+                for edge_data in data['edges']:
+                    try:
+                        edge = Knowledge_Edge(**edge_data)
+                        self.current_graph.add_edge(edge)
+                        added_edges_count += 1
+                    except (ValueError, TypeError) as e:
+                        errors.append({"item": str(edge_data), "message": str(e)})
+
+            return jinja2.Template(PROMPT_BATCH_ADD).render({
+                "success": True,
+                "graph_name": self.current_graph.name,
+                "added_nodes_count": added_nodes_count,
+                "added_edges_count": added_edges_count,
+                "errors": errors
+            })
+
+        except json.JSONDecodeError as e:
+            error_prompt = jinja2.Template(PROMPT_OPERATION_ERROR).render({"error_message": f"JSON解析失败: {e}"})
+            return jinja2.Template(PROMPT_BATCH_ADD).render({"success": False, "error_prompt": error_prompt})
+        except Exception as e:
+            error_prompt = jinja2.Template(PROMPT_OPERATION_ERROR).render({"error_message": str(e)})
+            return jinja2.Template(PROMPT_BATCH_ADD).render({
+                "success": False,
+                "graph_name": self.current_graph.name if self.current_graph else "Unknown",
+                "error_prompt": error_prompt
+            })
+
+    def sample_nodes(self, count: int = 5) -> str:
+        """
+        从图中随机采样指定数量的节点。
+
+        Args:
+            count (int, optional): 要采样的节点数量。默认为 5。
+
+        Returns:
+            str: 渲染后的prompt字符串。
+        """
+        if not self.current_graph:
+            return jinja2.Template(PROMPT_NO_CURRENT_GRAPH).render()
+
+        try:
+            all_nodes = list(self.current_graph.nodes.values())
+            if count > len(all_nodes):
+                count = len(all_nodes)
+            
+            sampled_nodes = random.sample(all_nodes, count)
+
+            return jinja2.Template(PROMPT_SAMPLE_NODES).render({
+                "success": True,
+                "graph_name": self.current_graph.name,
+                "count": count,
+                "sampled_nodes": sampled_nodes
+            })
+
+        except Exception as e:
+            error_prompt = jinja2.Template(PROMPT_OPERATION_ERROR).render({"error_message": str(e)})
+            return jinja2.Template(PROMPT_SAMPLE_NODES).render({
+                "success": False,
+                "graph_name": self.current_graph.name,
                 "error_prompt": error_prompt
             })

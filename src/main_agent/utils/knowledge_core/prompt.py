@@ -308,3 +308,161 @@ Args:
     neighbours (List[Knowledge_Node]): 邻居节点列表。
     error_prompt (str): 如果失败，则传递由 PROMPT_OPERATION_ERROR 生成的错误提示。
 """
+
+PROMPT_FIND_PATH = """
+{% if success %}
+## 路径查找成功
+
+在知识图谱 **{{ graph_name }}** 中，从节点 **{{ start_node_id }}** 到 **{{ end_node_id }}** 的路径如下：
+
+**路径节点:**
+{% for node_info in path_nodes %}
+- **ID:** {{ node_info.node.id }}
+  - **标题:** {{ node_info.node.title }}
+  - **入度:** {{ node_info.in_degree }}
+  - **出度:** {{ node_info.out_degree }}
+  - **中心度:** {{ "%.4f"|format(node_info.centrality) }}
+  {% if with_description and node_info.node.description %}
+  - **描述:** {{ node_info.node.description }}
+  {% endif %}
+{% endfor %}
+
+**路径边:**
+{% for edge in path_edges %}
+- **ID:** {{ edge.id }}
+  - **标题:** {{ edge.title }}
+  - **从:** {{ edge.start_node_id }}
+  - **到:** {{ edge.end_node_id }}
+  {% if with_edge_description and edge.description %}
+  - **描述:** {{ edge.description }}
+  {% endif %}
+{% endfor %}
+
+## 进一步操作提示
+你可以使用 `get_node_info` 或 `get_edge_info` 工具来获取更详细的信息。
+{% elif not_found %}
+## 路径查找结果
+
+在知识图谱 **{{ graph_name }}** 中，无法找到从节点 **{{ start_node_id }}** 到 **{{ end_node_id }}** 的路径。
+
+## 进一步操作提示
+请检查节点ID是否正确，或者尝试使用 `list_nodes` 工具来查看所有节点。
+{% elif error_prompt %}
+{{ error_prompt }}
+{% endif %}
+"""
+"""
+Args:
+    success (bool): 操作是否成功。
+    not_found (bool): 是否因为未找到路径而失败。
+    graph_name (str): 当前图谱的名称。
+    start_node_id (str): 起始节点的ID。
+    end_node_id (str): 结束节点的ID。
+    path_nodes (List[Dict[str, Any]]): 路径上的节点信息列表，每个元素包含 'node', 'in_degree', 'out_degree', 'centrality'。
+    path_edges (List[Knowledge_Edge]): 路径上的边列表。
+    with_description (bool): 是否包含节点描述。
+    with_edge_description (bool): 是否包含边描述。
+    error_prompt (str): 如果失败，则传递由 PROMPT_OPERATION_ERROR 生成的错误提示。
+"""
+
+PROMPT_DELETE_ITEMS = """
+{% if success %}
+## 批量删除成功
+
+在知识图谱 **{{ graph_name }}** 中，已成功完成批量删除操作。
+
+**删除统计:**
+- **节点:** {{ deleted_nodes_count }} 个
+- **边:** {{ deleted_edges_count }} 个
+
+{% if not_found_nodes %}
+**未找到的节点ID:**
+- {{ not_found_nodes | join(', ') }}
+{% endif %}
+
+{% if not_found_edges %}
+**未找到的边ID:**
+- {{ not_found_edges | join(', ') }}
+{% endif %}
+
+## 进一步操作提示
+你可以使用 `get_all_node` 或 `get_all_edge` 工具来确认删除结果。
+{% else %}
+{{ error_prompt }}
+{% endif %}
+"""
+"""
+Args:
+    success (bool): 操作是否成功。
+    graph_name (str): 当前图谱的名称。
+    deleted_nodes_count (int): 成功删除的节点数量。
+    deleted_edges_count (int): 成功删除的边数量。
+    not_found_nodes (List[str]): 未找到的节点ID列表。
+    not_found_edges (List[str]): 未找到的边ID列表。
+    error_prompt (str): 如果失败，则传递由 PROMPT_OPERATION_ERROR 生成的错误提示。
+"""
+
+PROMPT_BATCH_ADD = """
+{% if success %}
+## 批量添加成功
+
+在知识图谱 **{{ graph_name }}** 中，已成功完成批量添加操作。
+
+**添加统计:**
+- **节点:** {{ added_nodes_count }} 个
+- **边:** {{ added_edges_count }} 个
+
+{% if errors %}
+**添加失败的条目:**
+{% for error in errors %}
+- **条目:** `{{ error.item }}`
+  - **错误:** {{ error.message }}
+{% endfor %}
+{% endif %}
+
+## 进一步操作提示
+你可以使用 `get_all_node` 或 `get_all_edge` 工具来确认添加结果。
+{% else %}
+{{ error_prompt }}
+{% endif %}
+"""
+"""
+Args:
+    success (bool): 操作是否成功。
+    graph_name (str): 当前图谱的名称。
+    added_nodes_count (int): 成功添加的节点数量。
+    added_edges_count (int): 成功添加的边数量。
+    errors (List[Dict[str, Any]]): 添加失败的条目列表，每个元素包含 'item' 和 'message'。
+    error_prompt (str): 如果失败，则传递由 PROMPT_OPERATION_ERROR 生成的错误提示。
+"""
+
+PROMPT_SAMPLE_NODES = """
+{% if success %}
+## 随机采样成功
+
+在知识图谱 **{{ graph_name }}** 中，随机采样了 **{{ count }}** 个节点：
+
+{% if sampled_nodes %}
+| 节点 ID | 节点标题 | 描述 |
+|---|---|---|
+{% for node in sampled_nodes %}
+| {{ node.id }} | {{ node.title }} | {{ node.description or '无' }} |
+{% endfor %}
+{% else %}
+图中没有可供采样的节点。
+{% endif %}
+
+## 进一步操作提示
+你可以使用 `get_node_info` 查看具体节点的详细信息。
+{% else %}
+{{ error_prompt }}
+{% endif %}
+"""
+"""
+Args:
+    success (bool): 操作是否成功。
+    graph_name (str): 当前图谱的名称。
+    count (int): 请求采样的节点数量。
+    sampled_nodes (List[Knowledge_Node]): 采样到的节点列表。
+    error_prompt (str): 如果失败，则传递由 PROMPT_OPERATION_ERROR 生成的错误提示。
+"""
