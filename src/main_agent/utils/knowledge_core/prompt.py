@@ -54,6 +54,7 @@ Args:
     top_out_degree_nodes (List[Tuple[str, int]]): 出度最高前10节点
     top_betweenness_centrality_nodes (List[Tuple[str, int]]): 介数中心性最高前10节点
     top_closeness_centrality_nodes (List[Tuple[str, int]]): 接近中心性最高前10节点
+    top_tags (List[Tuple[str, int]]): 最常出现的标签
 """
 
 PROMPT_RELOAD_GRAPHS = """
@@ -635,6 +636,7 @@ Args:
     top_out_degree_nodes (List[Tuple[Knowledge_Node, int]]): 出度最高的节点列表。
     top_betweenness_centrality_nodes (List[Tuple[Knowledge_Node, float]]): 介数中心性最高的节点列表。
     sampled_edges (List[Knowledge_Edge]): 随机采样的边列表。
+    top_tags (List[Tuple[str, int]]): 最常出现的标签列表。
     error_prompt (str): 如果失败，则传递由 PROMPT_OPERATION_ERROR 生成的错误提示。
 """
 
