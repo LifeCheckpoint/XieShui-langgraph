@@ -18,7 +18,7 @@ class Knowledge_Edge(BaseModel):
 
 class Knowledge_Graph(BaseModel):
     ...
-```python
+```
 
 ## 进一步操作提示
 你可以通过一系列工具与知识图谱进行交互，建议全面了解图谱的信息与结构后执行操作
@@ -671,4 +671,42 @@ Args:
     count (int): 找到的节点数量。
     nodes (List[Knowledge_Node]): 匹配的节点列表。
     error_prompt (str): 如果失败，则传递由 PROMPT_OPERATION_ERROR 生成的错误提示。
+"""
+
+PROMPT_ALL_NODES = """
+## 所有节点信息
+
+在知识图谱 **{{ graph_name }}** 中共有 **{{ count }}** 个节点。
+
+{% if nodes %}
+| 节点 ID | 节点标题 |
+|---|---|
+{% for node in nodes %}
+| {{ node.id }} | {{ node.title }} |
+{% endfor %}
+{% else %}
+当前图谱中没有节点。
+{% endif %}
+
+## 进一步操作提示
+你可以使用 `get_node_info` 工具来获取特定节点的详细信息。
+"""
+
+PROMPT_ALL_EDGES = """
+## 所有边信息
+
+在知识图谱 **{{ graph_name }}** 中共有 **{{ count }}** 条边。
+
+{% if edges %}
+| 边 ID | 边标题 |
+|---|---|
+{% for edge in edges %}
+| {{ edge.id }} | {{ edge.title }} |
+{% endfor %}
+{% else %}
+当前图谱中没有边。
+{% endif %}
+
+## 进一步操作提示
+你可以使用 `get_edge_info` 工具来获取特定边的详细信息。
 """

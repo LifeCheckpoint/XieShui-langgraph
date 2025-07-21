@@ -739,8 +739,11 @@ class KnowledgeGraphIntegration:
         nodes = self.current_graph.get_all_node()
         node_briefs = [{"id": node.id, "title": node.title} for node in nodes]
         
-        # 使用json.dumps来格式化输出
-        return json.dumps(node_briefs, indent=4, ensure_ascii=False)
+        return jinja2.Template(PROMPT_ALL_NODES).render({
+            "graph_name": self.current_graph.name,
+            "count": len(nodes),
+            "nodes": node_briefs
+        })
 
     def get_all_edge(self) -> str:
         """
@@ -752,7 +755,11 @@ class KnowledgeGraphIntegration:
         edges = self.current_graph.get_all_edge()
         edge_briefs = [{"id": edge.id, "title": edge.title} for edge in edges]
         
-        return json.dumps(edge_briefs, indent=4, ensure_ascii=False)
+        return jinja2.Template(PROMPT_ALL_EDGES).render({
+            "graph_name": self.current_graph.name,
+            "count": len(edges),
+            "edges": edge_briefs
+        })
 
     def summarize_graph_content(self, max_nodes: int = 10, max_edges: int = 10) -> str:
         """
