@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 from pydantic import BaseModel, Field
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from collections import deque
+import networkx as nx
 import json
 
 from src.main_agent.utils.knowledge_core.node_edge import Knowledge_Node, Knowledge_Edge
@@ -234,4 +237,195 @@ class Knowledge_Graph(BaseModel):
             graph.nodes[edge.end_node_id].in_edge.append(edge.id)
 
         return graph
+    
+    def get_high_in_degree_nodes(self, top_k: int = 10) -> List[Tuple[Knowledge_Node, int]]:
+        """
+        获取入度最高的节点排名。
+        
+        Args:
+            top_k (int): 返回排名前 k 的节点。
+        
+        Returns:
+            List[Tuple[Knowledge_Node, int]]: 一个元组列表，每个元组包含节点对象和其入度值。
+        """
+        nodes_with_in_degree = [
+            (node, len(node.in_edge)) for node in self.nodes.values()
+        ]
+        nodes_with_in_degree.sort(key=lambda x: x[1], reverse=True)
+        return nodes_with_in_degree[:top_k]
+ 
+    def get_high_out_degree_nodes(self, top_k: int = 10) -> List[Tuple[Knowledge_Node, int]]:
+        """
+        获取出度最高的节点排名。
+        
+        Args:
+            top_k (int): 返回排名前 k 的节点。
+        
+        Returns:
+            List[Tuple[Knowledge_Node, int]]: 一个元组列表，每个元组包含节点对象和其出度值。
+        """
+        nodes_with_out_degree = [
+            (node, len(node.out_edge)) for node in self.nodes.values()
+        ]
+        nodes_with_out_degree.sort(key=lambda x: x[1], reverse=True)
+        return nodes_with_out_degree[:top_k]
+ 
+    def _to_networkx(self) -> nx.DiGraph:
+        """
+        内部辅助方法：将当前图转换为 networkx.DiGraph 对象。
+        """
+        G = nx.DiGraph()
+        for node_id in self.nodes:
+            G.add_node(node_id)
+        for edge in self.edges.values():
+            G.add_edge(edge.start_node_id, edge.end_node_id)
+        return G
+    
+    def get_high_betweenness_centrality_nodes(self, top_k: int = 10, approximate: bool = False) -> List[Tuple[Knowledge_Node, float]]:
+        """
+        获取介数中心性最高的节点排名。
+        对于大于几百个节点的图，精确计算可能较慢，可以选择近似计算。
+        
+        Args:
+            top_k (int): 返回排名前 k 的节点。
+            approximate (bool): 如果为True，则使用采样进行近似计算，速度更快。
+                                对于<1000节点的图，通常不需要。
+        
+        Returns:
+            List[Tuple[Knowledge_Node, float]]: 一个元组列表，每个元组包含节点对象和其介数中心性得分。
+        """
+        if not self.nodes:
+            return []
+        G = self._to_networkx()
+        
+        # 对于<1000节点的稀疏图，精确计算很快。但提供近似选项以备不时之需。
+        k_sample = int(len(self.nodes) * 0.2) if approximate else None
+        
+        centrality = nx.betweenness_centrality(G, k=k_sample, normalized=True)
+        
+        sorted_nodes = sorted(centrality.items(), key=lambda item: item[1], reverse=True)
+        
+        result = [
+            (self.nodes[node_id], score) for node_id, score in sorted_nodes[:top_k]
+        ]
+        return result
+ 
+    def get_high_closeness_centrality_nodes(self, top_k: int = 10) -> List[Tuple[Knowledge_Node, float]]:
+        """
+        获取接近中心性最高的节点排名。
+        
+        Args:
+            top_k (int): 返回排名前 k 的节点。
+        
+        Returns:
+            List[Tuple[Knowledge_Node, float]]: 一个元组列表，每个元组包含节点对象和其接近中心性得分。
+        """
+        if not self.nodes:
+            return []
+        G = self._to_networkx()
+        centrality = nx.closeness_centrality(G)
+        
+        sorted_nodes = sorted(centrality.items(), key=lambda item: item[1], reverse=True)
+        
+        result = [
+            (self.nodes[node_id], score) for node_id, score in sorted_nodes[:top_k]
+        ]
+        return result
+ 
+    def search_nodes_by_keyword(self, keyword: str, case_sensitive: bool = False) -> List[Knowledge_Node]:
+        """
+        根据关键词搜索节点。关键词会匹配节点的 title 和 description。
+        
+        Args:
+            keyword (str): 要搜索的关键词。
+            case_sensitive (bool): 是否区分大小写。默认为False。
+        
+        Returns:
+            List[Knowledge_Node]: 匹配的节点对象列表。
+        """
+        results = []
+        search_term = keyword if case_sensitive else keyword.lower()
+        
+        for node in self.nodes.values():
+            title = node.title if case_sensitive else node.title.lower()
+            description = ""
+            if node.description:
+                description = node.description if case_sensitive else node.description.lower()
+            
+            if search_term in title or search_term in description:
+                results.append(node)
+        return results
+ 
+    def search_edges_by_keyword(self, keyword: str, case_sensitive: bool = False) -> List[Knowledge_Edge]:
+        """
+        根据关键词搜索边。关键词会匹配边的 title 和 description。
+        
+        Args:
+            keyword (str): 要搜索的关键词。
+            case_sensitive (bool): 是否区分大小写。默认为False。
+        
+        Returns:
+            List[Knowledge_Edge]: 匹配的边对象列表。
+        """
+        results = []
+        search_term = keyword if case_sensitive else keyword.lower()
+        
+        for edge in self.edges.values():
+            title = edge.title if case_sensitive else edge.title.lower()
+            description = ""
+            if edge.description:
+                description = edge.description if case_sensitive else edge.description.lower()
+            
+            if search_term in title or search_term in description:
+                results.append(edge)
+        return results
+ 
+    def get_k_hop_neighborhood(self, start_node_id: str, k: int) -> Knowledge_Graph:
+        """
+        从一个起始节点开始，获取至多 k 次向外扩散得到的子图。
+        
+        Args:
+            start_node_id (str): 起始节点的ID。
+            k (int): 扩散的跳数（hops）。k=1 表示直接邻居。
+        
+        Returns:
+            Knowledge_Graph: 一个包含邻域内所有节点和边的新图对象。
+        """
+        if start_node_id not in self.nodes:
+            raise ValueError(f"起始节点 ID {start_node_id} 不存在")
+ 
+        subgraph = Knowledge_Graph()
+        
+        # 使用BFS进行遍历
+        queue = deque([(start_node_id, 0)]) # (node_id, current_depth)
+        visited_nodes = {start_node_id}
+        
+        # 首先将起始节点添加到子图中
+        subgraph.add_node(self.nodes[start_node_id].model_copy(deep=True))
+ 
+        while queue:
+            current_id, depth = queue.popleft()
+            
+            if depth >= k:
+                continue
+            
+            # 遍历当前节点的所有出边
+            for edge_id in self.nodes[current_id].out_edge:
+                edge = self.edges[edge_id]
+                neighbor_id = edge.end_node_id
+                
+                # 如果邻居节点未被访问过，则加入队列和子图
+                if neighbor_id not in visited_nodes:
+                    visited_nodes.add(neighbor_id)
+                    # 复制节点对象，避免修改原图
+                    subgraph.add_node(self.nodes[neighbor_id].model_copy(deep=True))
+                    queue.append((neighbor_id, depth + 1))
+                
+                # 只要边在扩散路径上，就将其加入子图
+                if edge.id not in subgraph.edges:
+                    # 复制边对象，并手动链接到子图中的节点
+                    new_edge = edge.model_copy(deep=True)
+                    subgraph.add_edge(new_edge)
+ 
+        return subgraph
 
