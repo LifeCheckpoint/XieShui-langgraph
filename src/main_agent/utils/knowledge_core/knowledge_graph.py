@@ -13,6 +13,7 @@ class Knowledge_Graph(BaseModel):
     """
     定义知识图谱的整体结构，包含所有节点和边。
     """
+    name: str = Field(default="Knowledge Graph") # 图谱名称
     nodes: Dict[str, Knowledge_Node] = Field(default={}) # 以 ID 为键存储所有节点
     edges: Dict[str, Knowledge_Edge] = Field(default={}) # 以 ID 为键存储所有边
 
