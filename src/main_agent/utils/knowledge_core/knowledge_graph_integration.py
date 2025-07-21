@@ -797,3 +797,24 @@ class KnowledgeGraphIntegration:
                 "graph_name": self.current_graph.name,
                 "error_prompt": error_prompt
             })
+        
+    def save_current_graph(self) -> str:
+        """
+        保存当前图谱到文件。
+        """
+        if not self.current_graph:
+            return jinja2.Template(PROMPT_NO_CURRENT_GRAPH).render()
+
+        try:
+            self.current_graph.save_to_file(self.current_graph.name + ".json")
+            return jinja2.Template(PROMPT_SAVE_GRAPH).render({
+                "success": True,
+                "graph_name": self.current_graph.name
+            })
+        except Exception as e:
+            error_prompt = jinja2.Template(PROMPT_OPERATION_ERROR).render({"error_message": str(e)})
+            return jinja2.Template(PROMPT_SAVE_GRAPH).render({
+                "success": False,
+                "graph_name": self.current_graph.name,
+                "error_prompt": error_prompt
+            })

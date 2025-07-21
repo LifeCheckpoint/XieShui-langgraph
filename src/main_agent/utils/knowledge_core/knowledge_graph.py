@@ -497,8 +497,6 @@ class Knowledge_Graph(BaseModel):
  
         return subgraph
 
-
-
     def get_top_k_tags(self, top_k: int = 10) -> List[Tuple[str, int]]:
         """
         统计所有节点中最常出现的标签。

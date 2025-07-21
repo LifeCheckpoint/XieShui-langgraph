@@ -710,3 +710,18 @@ PROMPT_ALL_EDGES = """
 ## 进一步操作提示
 你可以使用 `get_edge_info` 工具来获取特定边的详细信息。
 """
+
+PROMPT_SAVE_GRAPH = """
+{% if success %}
+## 图谱保存成功
+图谱 **{{ graph_name }}** 已成功保存到文件
+{% else %}
+图谱 **{{ graph_name }}** 保存失败: {{ error_prompt }}
+{% endif %}
+"""
+"""
+Args:
+    success (bool): 操作是否成功。
+    graph_name (str): 当前图谱的名称。
+    error_prompt (str): 如果失败，则传递由 PROMPT_OPERATION_ERROR 生成的错误提示。
+"""
