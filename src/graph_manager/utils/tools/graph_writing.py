@@ -76,7 +76,50 @@ class BatchAddFromJSONSchema(BaseModel):
 
 @tool("batch_add_from_json", args_schema=BatchAddFromJSONSchema)
 def batch_add_from_json(json_data: str) -> str:
-    """通过JSON数据批量添加节点和边。"""
+    """
+    通过JSON数据批量添加节点和边。
+
+    JSON格式要求:
+    - 顶层是一个对象，包含 "nodes" 和/或 "edges" 键。
+    - "nodes" 是一个节点对象列表。
+        - 每个节点对象必须包含:
+        - "title": str (可选, 默认为 "Node")
+        - "description": str (可选)
+        - "id": str (可选, 如果不提供会自动生成)
+        - "tags": List[str] (可选)
+    - "edges" 是一个边对象列表。
+        - 每个边对象必须包含:
+        - "start_node_id": str (必需)
+        - "end_node_id": str (必需)
+        - "title": str (可选, 默认为 "Edge")
+        - "description": str (可选)
+        - "id": str (可选, 如果不提供会自动生成)
+
+    JSON示例:
+    ```json
+    {
+        "nodes": [
+        {
+            "id": "node_1",
+            "title": "大语言模型",
+            "description": "一种先进的人工智能模型",
+            "tags": ["AI", "LLM"]
+        },
+        {
+            "id": "node_2",
+            "title": "知识图谱"
+        }
+        ],
+        "edges": [
+        {
+            "start_node_id": "node_1",
+            "end_node_id": "node_2",
+            "title": "应用于"
+        }
+        ]
+    }
+    ```
+    """
     return kgi.batch_add_from_json(json_data)
 
 
