@@ -2,6 +2,8 @@ from pydantic import BaseModel, Field
 from langchain_core.tools import tool
 import json
 
+from src.graph_manager.utils.kgi_init import kgi
+
 class AttemptCompletionSchema(BaseModel):
     """
     当你认为知识图谱管理任务完成的时候，使用此工具向系统确认该次任务完成。收到工具使用结果并确认任务已完成后，使用此工具向用户展示您的工作结果。
@@ -23,7 +25,11 @@ class AttemptCompletionSchema(BaseModel):
 
 @tool("attempt_completion", args_schema=AttemptCompletionSchema)
 def attempt_completion(status: str, detail: str) -> str:
+    # 默认保存图
+    save_result_str = kgi.save_all_graphs()
+
     return json.dumps({
         "status": status,
-        "detail": detail
+        "detail": detail,
+        "save_status": save_result_str,
     }, ensure_ascii=False, indent=4)
