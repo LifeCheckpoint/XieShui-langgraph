@@ -5,6 +5,7 @@ import json
 class KLGraphAbortSchema(BaseModel):
     """
     当你认为知识图谱管理任务未能完成的时候，使用此工具向管理者报告错误，或进一步要求更多信息
+    信息提供原则: **必须非常详细，包含所有你发现的问题、错误与失败**
 
     Example:
 

@@ -5,6 +5,7 @@ import json
 class AttemptCompletionSchema(BaseModel):
     """
     当你认为知识图谱管理任务完成的时候，使用此工具向系统确认该次任务完成。收到工具使用结果并确认任务已完成后，使用此工具向用户展示您的工作结果。
+    信息提供原则: **必须非常详细，包含所有你阅读图谱发现的信息**
 
     Example:
 
