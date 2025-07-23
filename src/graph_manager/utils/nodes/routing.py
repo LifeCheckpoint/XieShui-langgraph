@@ -10,7 +10,7 @@ def should_tool(state: MainAgentState, config: RunnableConfig) -> str:
     """
     检查是否需要调用工具。
     """
-    messages = state["messages"]
+    messages = state.messages
     last_message = messages[-1]
     
     if isinstance(last_message, AIMessage) and last_message.tool_calls:
@@ -27,7 +27,7 @@ def tool_result_transport(state: MainAgentState, config: RunnableConfig) -> str:
     """
     通过工具调用确定下一步 Agent 的转移执行情况。
     """
-    messages = state["messages"]
+    messages = state.messages
     ai_message = None
     for msg in reversed(messages):
         if isinstance(msg, AIMessage):

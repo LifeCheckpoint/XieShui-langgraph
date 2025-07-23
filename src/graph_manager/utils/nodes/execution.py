@@ -14,5 +14,5 @@ async def agent_execution(state: MainAgentState, config: RunnableConfig) -> Dict
     # 注意：这里我们复用了 main_agent 的 llm_manager
     # 在实际应用中，可以考虑为 graph_manager 定义独立的 LLM 配置
     llm = llm_manager.get_llm(config_name="default").bind_tools(tool_list)
-    response = await llm.ainvoke(state["messages"])
+    response = await llm.ainvoke(state.messages)
     return {"messages": [response]}

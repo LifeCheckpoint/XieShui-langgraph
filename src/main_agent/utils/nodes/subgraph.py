@@ -78,7 +78,7 @@ async def graph_manager_node(state: MainAgentState, config: RunnableConfig) -> D
 
     param = {}
     
-    messages = state["messages"]
+    messages = state.messages
     # 查找最近的 AIMessage
     ai_message = None
     for msg in reversed(messages):

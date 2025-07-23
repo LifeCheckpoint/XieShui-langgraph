@@ -23,7 +23,7 @@ async def init_information(state: MainAgentState, config: RunnableConfig) -> Dic
     })
 
     # 注入任务书
-    task_prompt = "# 知识图谱管理任务指令\n\n" + state.get("task_book", "")
+    task_prompt = "# 知识图谱管理任务指令\n\n" + state.task_book
 
     # 读取 planning.txt
     planning_prompt_path: AsyncPath = AsyncPath(__file__).parent / "planning.txt"
