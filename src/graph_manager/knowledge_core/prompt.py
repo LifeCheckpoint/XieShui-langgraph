@@ -725,3 +725,42 @@ Args:
     graph_name (str): 当前图谱的名称。
     error_prompt (str): 如果失败，则传递由 PROMPT_OPERATION_ERROR 生成的错误提示。
 """
+
+PROMPT_NO_GRAPHS_TO_SAVE = """
+## 操作失败
+错误: 当前没有可保存的知识图谱。
+请先使用 `add_graph` 工具添加图谱，或使用 `reload_graphs` 工具加载现有图谱。
+"""
+"""
+Args:
+    None
+"""
+
+PROMPT_SAVE_ALL_GRAPHS = """
+## 批量保存图谱结果
+{% if saved_graphs %}
+以下图谱已成功保存:
+{% for graph_name in saved_graphs %}
+- {{ graph_name }}
+{% endfor %}
+{% endif %}
+
+{% if failed_graphs %}
+以下图谱保存失败:
+{% for graph in failed_graphs %}
+- {{ graph.name }}: {{ graph.error }}
+{% endfor %}
+{% endif %}
+
+{% if not saved_graphs and not failed_graphs %}
+没有图谱被保存。
+{% endif %}
+
+## 进一步操作提示
+你可以通过文件系统检查保存结果。
+"""
+"""
+Args:
+    saved_graphs (List[str]): 成功保存的图谱名称列表。
+    failed_graphs (List[Dict[str, str]]): 保存失败的图谱列表，每个元素包含 'name' 和 'error'。
+"""

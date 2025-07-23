@@ -797,7 +797,7 @@ class KnowledgeGraphIntegration:
                 "graph_name": self.current_graph.name,
                 "error_prompt": error_prompt
             })
-        
+    
     def save_current_graph(self) -> str:
         """
         保存当前图谱到文件。
@@ -806,7 +806,13 @@ class KnowledgeGraphIntegration:
             return jinja2.Template(PROMPT_NO_CURRENT_GRAPH).render()
 
         try:
-            self.current_graph.save_to_file(self.current_graph.name + ".json")
+            # 使用 reload_graphs 中定义的默认路径
+            graph_dir = Path(__file__).parent.parent.parent / "data" / "knowledge_graphs"
+            if not graph_dir.exists():
+                graph_dir.mkdir(parents=True, exist_ok=True)
+            
+            file_path = graph_dir / f"{self.current_graph.name}.json"
+            self.current_graph.save_to_file(str(file_path))
             return jinja2.Template(PROMPT_SAVE_GRAPH).render({
                 "success": True,
                 "graph_name": self.current_graph.name
@@ -818,3 +824,31 @@ class KnowledgeGraphIntegration:
                 "graph_name": self.current_graph.name,
                 "error_prompt": error_prompt
             })
+
+    def save_all_graphs(self) -> str:
+        """
+        保存所有已加载的知识图谱到文件。
+        """
+        if not self.graph_list:
+            return jinja2.Template(PROMPT_NO_GRAPHS_TO_SAVE).render()
+
+        saved_graphs = []
+        failed_graphs = []
+        
+        # 使用 reload_graphs 中定义的默认路径
+        graph_dir = Path(__file__).parent.parent.parent / "data" / "knowledge_graphs"
+        if not graph_dir.exists():
+            graph_dir.mkdir(parents=True, exist_ok=True)
+
+        for graph in self.graph_list:
+            try:
+                file_path = graph_dir / f"{graph.name}.json"
+                graph.save_to_file(str(file_path))
+                saved_graphs.append(graph.name)
+            except Exception as e:
+                failed_graphs.append({"name": graph.name, "error": str(e)})
+        
+        return jinja2.Template(PROMPT_SAVE_ALL_GRAPHS).render({
+            "saved_graphs": saved_graphs,
+            "failed_graphs": failed_graphs
+        })
