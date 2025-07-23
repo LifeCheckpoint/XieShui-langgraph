@@ -104,6 +104,21 @@ class KnowledgeGraphIntegration:
         except Exception as e:
             print(f"Error adding graph: {e}")
             return f"添加图谱失败，错误原因: {e}"
+        
+    def list_current_graph(self) -> str:
+        """
+        列出所有存在的知识图谱
+        """
+        if not self.graph_list:
+            return jinja2.Template(PROMPT_LIST_GRAPHS).render({
+                "graph_list": [],
+                "empty": True
+            })
+        
+        return jinja2.Template(PROMPT_LIST_GRAPHS).render({
+            "graph_list": self.graph_list,
+            "empty": False
+        })
 
     def set_current_graph(self, name: str) -> str:
         """

@@ -10,3 +10,5 @@ def init_kgi():
     global kgi
     # 初始化一个 KnowledgeGraphIntegration 实例，供所有工具函数使用
     kgi = KnowledgeGraphIntegration()
+    # 加载默认知识图谱集
+    kgi.reload_graphs()

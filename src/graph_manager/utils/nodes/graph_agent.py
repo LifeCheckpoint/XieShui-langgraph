@@ -6,6 +6,7 @@ from aiopath import AsyncPath
 from typing import Any, Dict
 import jinja2
 
+from src.graph_manager.utils.kgi_init import kgi
 from src.graph_manager.utils.state import MainAgentState
 
 
@@ -29,8 +30,12 @@ async def init_information(state: MainAgentState, config: RunnableConfig) -> Dic
     planning_prompt_path: AsyncPath = AsyncPath(__file__).parent / "planning.txt"
     planning_prompt: str = (await planning_prompt_path.read_text(encoding="utf-8")).strip()
 
+    # 注入其它提示
+    current_graph_list = kgi.list_current_graph()
+
     return {"messages": [
         SystemMessage(content=system_prompt),
         HumanMessage(content=task_prompt),
-        HumanMessage(content=planning_prompt)
+        HumanMessage(content=planning_prompt),
+        HumanMessage(content=current_graph_list)
     ]}

@@ -91,6 +91,22 @@ Args:
     graph (KnowledgeGraph): 新添加的图谱
 """
 
+PROMPT_LIST_GRAPHS = """
+{% if not empty %}
+当前已加载的知识图谱列表:
+{% for graph in graph_list %}
+- {{ graph.name }}
+{% endfor %}
+{% else %}
+当前没有已加载的知识图谱
+{% endif %}
+"""
+"""
+Args:
+    graph_list (List[KnowledgeGraph]): 当前已加载的图谱列表
+    empty (bool): 是否为空列表
+"""
+
 PROMPT_SET_GRAPH_FAILED = """
 ## 切换图谱失败
 未能找到名为 `{{ name }}` 的知识图谱。
