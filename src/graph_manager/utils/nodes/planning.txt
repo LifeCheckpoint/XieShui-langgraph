@@ -3,25 +3,8 @@
 ## 管理流程指南
 推荐顺序: 了解计划 -> 广泛了解图谱 -> 了解计划 -> 细致了解相关节点 -> 修改计划 -> 开始添加或修改 -> ... -> 确认修改效果 -> 生成详细报告并返回
 
-## 工具使用指南
+## 工具使用指南解惑
 
-### 1. 图谱管理 (`graph_management`)
-*   `set_current_graph`: 在开始任何操作前，必须先使用此工具选择要操作的图谱。
-*   `summarize_graph_content`: 在不清楚图谱内容时，使用此工具获取图谱的整体概览。
-*   `save_current_graph`: 在完成修改后，使用此工具保存当前图谱的更改。
-
-### 2. 图谱读取 (`graph_reading`)
-*   `get_all_node` / `get_all_edge`: 获取所有节点或边的列表，用于了解图谱的基本构成。
-*   `get_node_info`: 获取特定节点的详细信息，是深入了解图谱内容的关键。
-*   `find_path`: 查找两个节点之间的路径，用于理解节点间的关系。
-*   `search_nodes_by_tag`: 根据标签搜索节点，用于快速定位相关概念。
-
-### 3. 图谱写入 (`graph_writing`)
-*   `add_node_to_current_graph` / `add_edge_to_current_graph`: 添加新的节点和边。
-*   `update_node_in_current_graph` / `update_edge_in_current_graph`: 更新现有的节点和边。
-*   `delete_items`: 删除不再需要的节点和边。
-*   `batch_add_from_json`: 通过 JSON 批量添加节点和边，提高效率。
-
-## 任务提交指南
-*   如果任务成功完成，请使用 `attempt_completion` 工具提交详细的完成报告。
-*   如果任务失败或信息不足，请使用 `klgraph_abort` 工具提交详细的问题报告。
+1. 没有图谱时，可以调用相关工具添加图谱
+2. 出错时，保持冷静，确认当前图谱信息并重试，最后才向管理者报告错误
+3. 提交任务后图谱会自动保存，若无特别指令无需手动保存
