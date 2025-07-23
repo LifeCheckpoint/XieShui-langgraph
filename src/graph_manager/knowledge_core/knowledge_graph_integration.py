@@ -57,7 +57,7 @@ class KnowledgeGraphIntegration:
         err_load_list = []
 
         if not graph_dir:
-            graph_dir = Path(__file__).parent.parent.parent / "data" / "knowledge_graphs"
+            graph_dir = Path(__file__).parent.parent.parent.parent / "data" / "knowledge_graphs"
         if isinstance(graph_dir, str):
             graph_dir = Path(graph_dir)
         if not graph_dir.exists():
@@ -807,7 +807,7 @@ class KnowledgeGraphIntegration:
 
         try:
             # 使用 reload_graphs 中定义的默认路径
-            graph_dir = Path(__file__).parent.parent.parent / "data" / "knowledge_graphs"
+            graph_dir = Path(__file__).parent.parent.parent.parent / "data" / "knowledge_graphs"
             if not graph_dir.exists():
                 graph_dir.mkdir(parents=True, exist_ok=True)
             
@@ -836,7 +836,7 @@ class KnowledgeGraphIntegration:
         failed_graphs = []
         
         # 使用 reload_graphs 中定义的默认路径
-        graph_dir = Path(__file__).parent.parent.parent / "data" / "knowledge_graphs"
+        graph_dir = Path(__file__).parent.parent.parent.parent / "data" / "knowledge_graphs"
         if not graph_dir.exists():
             graph_dir.mkdir(parents=True, exist_ok=True)
 
