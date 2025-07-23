@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from langchain_core.runnables import RunnableConfig
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage, HumanMessage
 from typing import Any, Dict
 
 from src.graph_manager.utils.state import MainAgentState
@@ -16,7 +16,11 @@ def should_tool(state: MainAgentState, config: RunnableConfig) -> str:
     if isinstance(last_message, AIMessage) and last_message.tool_calls:
         return "tools"
     
-    # 如果没有工具调用，则循环回到 agent_execution
+    # 如果没有工具调用，添加警告并循环回到 agent_execution
+    state.messages.append(HumanMessage(
+        content="目前尚未调用任何工具，如果你认为任务已经结束，请调用attempt_completion或klgraph_abort工具；否则请继续尝试利用工具进行知识图谱管理"
+    ))
+    
     return "agent_execution"
 
 def tool_result_transport(state: MainAgentState, config: RunnableConfig) -> str:
