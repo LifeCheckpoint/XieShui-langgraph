@@ -35,6 +35,7 @@ from src.main_agent.utils import (
     summarization_node,
     tools,
     deep_research_node,
+    graph_manager_node,
 )
 
 # 主图定义
@@ -49,17 +50,19 @@ builder.add_node("ask_interrupt", ask_interrupt)
 builder.add_node("tools", tools)
 builder.add_node("summarization", summarization_node)
 builder.add_node("deep_research_node", deep_research_node)
+builder.add_node("graph_manager_node", graph_manager_node)
 
 # 添加边
 builder.add_edge(START, "welcome")
 builder.add_edge("welcome", "finish_interrupt")
 builder.add_edge("finish_interrupt", "agent_execution")
-builder.add_conditional_edges("agent_execution", should_tool, ["tools", "no_tools_warning"]) 
-builder.add_conditional_edges("tools", tool_result_transport, ["summarization", "agent_execution", "ask_interrupt", "deep_research_node"])
+builder.add_conditional_edges("agent_execution", should_tool, ["tools", "no_tools_warning"])
+builder.add_conditional_edges("tools", tool_result_transport, ["summarization", "agent_execution", "ask_interrupt", "deep_research_node", "graph_manager_node"])
 builder.add_edge("ask_interrupt", "agent_execution")
 builder.add_edge("no_tools_warning", "agent_execution")
 builder.add_edge("summarization", "finish_interrupt")
 builder.add_edge("deep_research_node", "agent_execution")
+builder.add_edge("graph_manager_node", "agent_execution")
 
 # 编译
 builder.compile(name="XieshuiMainAgent", checkpointer=MemorySaver())

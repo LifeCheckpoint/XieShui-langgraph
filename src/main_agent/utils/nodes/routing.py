@@ -44,5 +44,7 @@ def tool_result_transport(state: MainAgentState, config: RunnableConfig) -> str:
                     return "ask_interrupt"
                 case "deep_research":
                     return "deep_research_node"
+                case "graph_manager":
+                    return "graph_manager_node"
     
     return "agent_execution"
