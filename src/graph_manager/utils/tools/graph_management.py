@@ -5,6 +5,16 @@ from langchain_core.tools import tool
 
 from src.graph_manager.utils.kgi_init import kgi
 
+
+class AddNewGraphSchema(BaseModel):
+    """添加新的知识图谱。"""
+    name: str = Field(description="要添加的图谱的名称。")
+
+@tool("add_new_graph", args_schema=AddNewGraphSchema)
+def add_new_graph(name: str) -> str:
+    """添加新的知识图谱。"""
+    return kgi.add_graph(name)
+
 class SetCurrentGraphSchema(BaseModel):
     """设置当前操作的知识图谱。"""
     name: str = Field(description="要设置为当前图谱的名称。")
@@ -38,6 +48,7 @@ def save_current_graph() -> str:
 
 # 将所有管理工具函数收集到一个列表中
 management_tool_list = [
+    add_new_graph,
     set_current_graph,
     summarize_graph_content,
     save_current_graph,

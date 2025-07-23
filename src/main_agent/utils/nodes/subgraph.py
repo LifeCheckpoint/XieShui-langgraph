@@ -100,7 +100,7 @@ async def graph_manager_node(state: MainAgentState, config: RunnableConfig) -> D
             result = await graph_manager_builder.ainvoke({
                 "messages": [], # graph_manager 是一个独立的 Agent，不需要传递消息历史
                 "task_book": param["task_book"],
-            })
+            }, {"recursion_limit": 100})
             # 获取 graph_manager 的最终结果
             final_message = result["messages"][-1]
             content = final_message.content

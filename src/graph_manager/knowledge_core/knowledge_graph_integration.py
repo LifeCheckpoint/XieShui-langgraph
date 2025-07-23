@@ -79,7 +79,7 @@ class KnowledgeGraphIntegration:
             "err_load_list": err_load_list
         })
         
-    def add_graph(self, filename: str, graph: Optional[Knowledge_Graph] = None) -> str:
+    def add_graph(self, graph_name: str, graph: Optional[Knowledge_Graph] = None) -> str:
         """
         添加一个新的知识图谱到集成中，并保存到文件
         Args:
@@ -87,14 +87,15 @@ class KnowledgeGraphIntegration:
             graph (Knowledge_Graph): 要添加的知识图谱
         """
         if not graph:
-            graph = Knowledge_Graph(name=filename)
+            graph = Knowledge_Graph(name=graph_name)
 
         if not isinstance(graph, Knowledge_Graph):
             raise TypeError("graph must be an instance of Knowledge_Graph")
 
         try:
             self.graph_list.append(graph)
-            graph.save_to_file(filename)
+            file_path = Path(__file__).parent.parent.parent.parent / "data" / "knowledge_graphs" / f"{graph_name}.json"
+            graph.save_to_file(file_path)
             self.current_graph = graph
 
             return jinja2.Template(PROMPT_ADD_GRAPH).render({
