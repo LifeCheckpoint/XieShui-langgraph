@@ -6,6 +6,7 @@ class GraphManagerSchema(BaseModel):
     """
     当你需要对知识图谱进行管理、操作、查询或分析时，使用此工具。
     它会调用一个专门的知识图谱管理 Agent 来执行复杂的图谱任务。
+    注意，下达任务时，禁止一次性下达可能造成过多知识构建的指令，导致 Agent 负载过大
 
     Example:
 
@@ -29,9 +30,6 @@ class GraphManagerSchema(BaseModel):
 
 @tool("graph_manager", args_schema=GraphManagerSchema)
 def graph_manager(task_book: str) -> str:
-    """
-    调用知识图谱管理 Agent (graph_manager) 来执行图谱操作。
-    """
     return json.dumps({
         "task_book": task_book
     }, ensure_ascii=False, indent=4)

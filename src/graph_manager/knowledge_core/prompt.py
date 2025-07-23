@@ -726,6 +726,12 @@ PROMPT_ALL_EDGES = """
 ## 进一步操作提示
 你可以使用 `get_edge_info` 工具来获取特定边的详细信息。
 """
+"""
+Args:
+    graph_name (str): 当前图谱的名称。
+    count (int): 节点或边的数量。
+    edges (List[Knowledge_Edge]): 所有边列表。
+"""
 
 PROMPT_SAVE_GRAPH = """
 {% if success %}
