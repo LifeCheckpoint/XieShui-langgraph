@@ -3,10 +3,7 @@ from __future__ import annotations
 from pydantic import BaseModel, Field
 from langchain_core.tools import tool
 
-from src.graph_manager.knowledge_core.knowledge_graph_integration import KnowledgeGraphIntegration
-
-# 初始化一个 KnowledgeGraphIntegration 实例，供所有工具函数使用
-kgi = KnowledgeGraphIntegration()
+from src.graph_manager.utils.kgi_init import kgi
 
 class SetCurrentGraphSchema(BaseModel):
     """设置当前操作的知识图谱。"""
@@ -16,6 +13,7 @@ class SetCurrentGraphSchema(BaseModel):
 def set_current_graph(name: str) -> str:
     """设置当前操作的知识图谱。"""
     return kgi.set_current_graph(name)
+
 
 class SummarizeGraphContentSchema(BaseModel):
     """为LLM提供当前知识图谱的高层次摘要。"""
@@ -27,6 +25,7 @@ def summarize_graph_content(max_nodes: int = 10, max_edges: int = 10) -> str:
     """通过随机采样，为LLM提供当前知识图谱的高层次摘要。"""
     return kgi.summarize_graph_content(max_nodes, max_edges)
 
+
 class SaveCurrentGraphSchema(BaseModel):
     """保存当前图谱到文件。"""
     pass
@@ -35,6 +34,7 @@ class SaveCurrentGraphSchema(BaseModel):
 def save_current_graph() -> str:
     """保存当前图谱到文件。"""
     return kgi.save_current_graph()
+
 
 # 将所有管理工具函数收集到一个列表中
 management_tool_list = [

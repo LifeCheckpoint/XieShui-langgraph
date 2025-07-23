@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+# 创建图管理器
+import src.graph_manager.utils.kgi_init as kgi_init
+kgi_init.init_kgi()
+
 from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
 

@@ -4,10 +4,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, List
 from langchain_core.tools import tool
 
-from src.graph_manager.knowledge_core.knowledge_graph_integration import KnowledgeGraphIntegration
-
-# 初始化一个 KnowledgeGraphIntegration 实例，供所有工具函数使用
-kgi = KnowledgeGraphIntegration()
+from src.graph_manager.utils.kgi_init import kgi
 
 class GetAllNodeSchema(BaseModel):
     """获取当前图谱中所有节点的简要信息（ID和标题）。"""
@@ -18,6 +15,7 @@ def get_all_node() -> str:
     """获取当前图谱中所有节点的简要信息（ID和标题）。"""
     return kgi.get_all_node()
 
+
 class GetAllEdgeSchema(BaseModel):
     """获取当前图谱中所有边的简要信息（ID和标题）。"""
     pass
@@ -27,6 +25,7 @@ def get_all_edge() -> str:
     """获取当前图谱中所有边的简要信息（ID和标题）。"""
     return kgi.get_all_edge()
 
+
 class GetNodeInfoSchema(BaseModel):
     """获取当前图谱中指定ID的节点信息。"""
     node_id: str = Field(description="要查询的节点ID。")
@@ -35,6 +34,7 @@ class GetNodeInfoSchema(BaseModel):
 def get_node_info(node_id: str) -> str:
     """获取当前图谱中指定ID的节点信息。"""
     return kgi.get_node_info(node_id)
+
 
 class FindPathSchema(BaseModel):
     """查找两个节点之间的最短路径。"""
@@ -48,6 +48,7 @@ def find_path(start_node_id: str, end_node_id: str, with_description: bool = Fal
     """查找两个节点之间的最短路径。"""
     return kgi.find_path(start_node_id, end_node_id, with_description, with_edge_description)
 
+
 class SearchNodesByTagSchema(BaseModel):
     """根据一个或多个标签搜索节点。"""
     tags: List[str] = Field(description="要搜索的标签列表。")
@@ -58,6 +59,7 @@ class SearchNodesByTagSchema(BaseModel):
 def search_nodes_by_tag(tags: List[str], mode: str = 'AND', case_sensitive: bool = False) -> str:
     """根据一个或多个标签搜索节点。"""
     return kgi.search_nodes_by_tag(tags, mode, case_sensitive)
+
 
 # 将所有读取工具函数收集到一个列表中
 reading_tool_list = [
