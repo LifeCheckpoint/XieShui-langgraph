@@ -106,7 +106,7 @@ async def write_sections(state: MainAgentState) -> dict:
     # 最后添加引用文献列表
     report += "\n## 参考文献\n\n"
     for cite in citations.items():
-        report += f"- [{cite[0]}]: {cite[1]['url']}\n"
+        report += f"- {cite[0]}: {cite[1]['url']}\n"
     report += "\n"
 
     return {"report": report}
