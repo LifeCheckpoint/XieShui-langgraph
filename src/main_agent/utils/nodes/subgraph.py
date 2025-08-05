@@ -17,7 +17,7 @@ async def deep_research_node(state: MainAgentState, config: RunnableConfig) -> D
 
     param = {}
     
-    messages = state["messages"]
+    messages = state.messages
     # 查找最近的 AIMessage，因为只有 AIMessage 才会有 tool_calls 属性
     ai_message = None
     for msg in reversed(messages):
@@ -44,7 +44,7 @@ async def deep_research_node(state: MainAgentState, config: RunnableConfig) -> D
                 "messages": [HumanMessage(content=tool_call["args"].get("subject", ""))],
                 "topic": param["subject"],
                 "research_total_cycles": int(param["recursion"])
-            })
+            }) # type: ignore
         except Exception as e:
             error_msg = "深度研究执行过程中发生异常: " + str(e) + "\n" + traceback.format_exc()
             return {
@@ -100,7 +100,7 @@ async def graph_manager_node(state: MainAgentState, config: RunnableConfig) -> D
             result = await graph_manager_builder.ainvoke({
                 "messages": [], # graph_manager 是一个独立的 Agent，不需要传递消息历史
                 "task_book": param["task_book"],
-            }, {"recursion_limit": 100})
+            }, {"recursion_limit": 100}) # type: ignore
             # 获取 graph_manager 的最终结果
             final_message = result["messages"][-1]
             content = final_message.content
