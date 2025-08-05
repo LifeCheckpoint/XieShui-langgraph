@@ -123,10 +123,20 @@ async def finetune_report(state: MainAgentState) -> dict:
     llm = llm_manager.get_llm(config_name="long_writing")
     response = await llm.ainvoke([HumanMessage(content=rendered_prompt)])
 
+    def make_valid_filename(filename):
+        invalid_chars = ['/', '\\', '?', '%', '*', ':', '|', '"', '<', '>', '.']
+        valid_filename = ''
+        for char in filename:
+            if char not in invalid_chars:
+                valid_filename += char
+            else:
+                valid_filename += '_'
+        return valid_filename
+
     text: str = response.content # type: ignore
     title = text.split("\n")[0].strip("# ").strip()
     title = title if title else f"深度研究综述报告 {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}"
-    title = title + ".md"
+    title = make_valid_filename(title) + ".md"
 
     # 写入报告到当前目录
     report_path = Path(__file__).parent.parent.parent.parent / "data" / "deep_research" / title
