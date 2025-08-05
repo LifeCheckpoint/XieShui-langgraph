@@ -22,7 +22,7 @@ dependencies = [
     "langmem>=0.0.1rc9",
     "networkx>=3.2.1",
     "python-dotenv>=1.0.1",
-    "unstructured[all]>=0.14.10",
+    "unstructured[all,all-docs,full]>=0.14.10",
 ]
 
 
