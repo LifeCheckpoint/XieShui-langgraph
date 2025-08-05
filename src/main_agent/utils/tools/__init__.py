@@ -10,12 +10,12 @@ from src.main_agent.utils.tools.create_file import create_file
 from src.main_agent.utils.tools.list_files import list_files
 from src.main_agent.utils.tools.get_cwd import get_current_working_directory
 from src.main_agent.utils.tools.search_file import search_file
-from src.main_agent.utils.tools.summarize import summarize
+from src.main_agent.utils.tools.summarize import note_summarize
 
 tool_list = [
     attempt_completion, ask_question, python_eval, deep_research, graph_manager,
     read_file, create_file, list_files, get_current_working_directory,
-    search_file, summarize
+    search_file, note_summarize
 ]
 """
 工具列表，包含了所有可用的工具函数

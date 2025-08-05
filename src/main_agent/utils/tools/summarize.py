@@ -22,8 +22,8 @@ try:
 except FileNotFoundError:
     instruction = "请为我总结以下文本。"
 
-@tool("summarize", args_schema=SummarizeSchema)
-def summarize(text: str) -> str:
+@tool("note_summarize", args_schema=SummarizeSchema)
+def note_summarize(text: str) -> str:
     """
     根据专业指令对文本进行总结和笔记整理。
     """
