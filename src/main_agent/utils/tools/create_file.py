@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from langchain_core.tools import tool
-import os
+from pathlib import Path
 
 class CreateFileSchema(BaseModel):
     """
@@ -23,13 +23,16 @@ def create_file(path: str, content: str) -> str:
     安全地创建一个新文件并写入内容。
     """
     try:
+        p = Path(path)
         # 检查文件是否已存在
-        if os.path.exists(path):
+        if p.exists():
             return f"错误: 文件 '{path}' 已存在。不允许覆盖文件。"
         
+        # 创建父目录（如果不存在）
+        p.parent.mkdir(parents=True, exist_ok=True)
+        
         # 创建并写入文件
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(content)
+        p.write_text(content, encoding="utf-8")
             
         return f"文件 '{path}' 已成功创建。"
     except Exception as e:

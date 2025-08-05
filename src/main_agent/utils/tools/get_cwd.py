@@ -1,5 +1,5 @@
 from langchain_core.tools import tool
-import os
+from pathlib import Path
 
 @tool("get_current_working_directory")
 def get_current_working_directory() -> str:
@@ -10,4 +10,4 @@ def get_current_working_directory() -> str:
     Example:
     - get_current_working_directory: {}
     """
-    return f"当前工作目录是: {os.getcwd()}"
+    return f"当前工作目录是: {Path.cwd()}"

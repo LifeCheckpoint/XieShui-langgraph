@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from langchain_core.tools import tool
 from langchain_community.document_loaders import UnstructuredFileLoader
-import os
+from pathlib import Path
 from typing import List, Dict, Any
 
 class ReadFileSchema(BaseModel):
@@ -20,11 +20,12 @@ def read_file(path: str) -> List[Dict[str, Any]]:
     读取指定路径的文件，并将其内容加载为 LangChain 的 Document 对象列表。
     """
     try:
-        if not os.path.isfile(path):
+        p = Path(path)
+        if not p.is_file():
             return [{"error": f"路径 '{path}' 不是一个有效的文件。"}]
         
         # 使用 UnstructuredFileLoader 加载文件
-        loader = UnstructuredFileLoader(path)
+        loader = UnstructuredFileLoader(str(p))
         documents = loader.load()
         
         # 将 Document 对象序列化为字典列表

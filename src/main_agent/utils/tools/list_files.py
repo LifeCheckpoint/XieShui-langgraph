@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from langchain_core.tools import tool
-import os
+from pathlib import Path
 
 class ListFilesSchema(BaseModel):
     """
@@ -18,10 +18,11 @@ def list_files(path: str) -> str:
     浏览指定目录下的文件和文件夹。
     """
     try:
-        if not os.path.isdir(path):
+        p = Path(path)
+        if not p.is_dir():
             return f"错误: 路径 '{path}' 不是一个有效的目录。"
         
-        files = os.listdir(path)
+        files = [item.name for item in p.iterdir()]
         if not files:
             return f"目录 '{path}' 是空的。"
         
