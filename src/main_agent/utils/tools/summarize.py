@@ -1,8 +1,9 @@
 from pydantic import BaseModel, Field
 from langchain_core.tools import tool
 from langchain_core.messages import SystemMessage, HumanMessage
-from pathlib import Path
 from src.main_agent.llm_manager import llm_manager
+from datetime import datetime
+from pathlib import Path
 
 class SummarizeSchema(BaseModel):
     """
@@ -38,7 +39,21 @@ def summarize(text: str) -> str:
         
         # 调用 LLM
         response = llm.invoke(messages)
+        result_text: str = response.content # type: ignore
+        title = result_text.split("\n")[0].strip("# ")
+        title = title if title else f"笔记 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        title += ".md"
+
+        # 保存到文件
+        file_path = Path(__file__).parent.parent.parent.parent.parent / "data" / "note_parser" / title
         
-        return response.content # type: ignore
+        try:
+            file_path.write_text(result_text, encoding="utf-8")
+        except:
+            file_path = Path(__file__).parent.parent.parent.parent / "data" / "note_parser" / f"笔记_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.md"
+            file_path.write_text(result_text, encoding="utf-8")
+
+        return result_text.strip() + f"\n\n笔记已保存到: {file_path.resolve()}"
+    
     except Exception as e:
         return f"生成摘要时发生错误: {e}"

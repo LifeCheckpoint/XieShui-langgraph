@@ -57,7 +57,7 @@ async def generate_outline(state: MainAgentState) -> dict:
     
     response = await llm.ainvoke([HumanMessage(content=rendered_prompt)])
     
-    return {"report_outline": response.dict(), "citations": cite_mapping}
+    return {"report_outline": response.dict(), "citations": cite_mapping} # type: ignore
 
 # --- Write Sections ---
 
