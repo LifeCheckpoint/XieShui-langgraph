@@ -50,7 +50,7 @@ def note_summarize(text: str) -> str:
         try:
             file_path.write_text(result_text, encoding="utf-8")
         except:
-            file_path = Path(__file__).parent.parent.parent.parent / "data" / "note_parser" / f"笔记_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.md"
+            file_path = Path(__file__).parent.parent.parent.parent.parent / "data" / "note_parser" / f"笔记_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.md"
             file_path.write_text(result_text, encoding="utf-8")
 
         return result_text.strip() + f"\n\n笔记已保存到: {file_path.resolve()}"
