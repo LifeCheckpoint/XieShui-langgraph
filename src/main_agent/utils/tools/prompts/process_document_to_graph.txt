@@ -1,0 +1,31 @@
+{% raw %}
+你是一位专业的知识图谱构建专家。
+请分析以下讲义内容。根据内容判断，是应该将其补充到现有的图谱中，还是创建一个全新的图谱更合适？
+请提取讲义中的核心概念作为节点，以及它们之间的关系作为边，并以 JSON 格式返回。
+同时，在 JSON 中明确指出你的选择（"action": "update" 或 "action": "create"）以及目标图谱的名称（"graph_name": "..."）。
+如果选择 update，请从现有图谱列表中选择一个最相关的图谱名称。如果选择 create，请为新图谱起一个合适的名字。
+{% endraw %}
+
+现有图谱列表:
+{% for graph in existing_graphs %}
+- {{ graph }}
+{% endfor %}
+
+讲义内容:
+---
+{{ content }}
+---
+
+{% raw %}
+请严格按照以下 JSON 格式输出:
+{
+    "action": "create" | "update",
+    "graph_name": "your_chosen_or_new_graph_name",
+    "nodes": [
+        {"id": "...", "title": "...", "description": "...", "tags": ["..."]}
+    ],
+    "edges": [
+        {"start_node_id": "...", "end_node_id": "...", "title": "..."}
+    ]
+}
+{% endraw %}
