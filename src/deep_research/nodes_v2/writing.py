@@ -188,21 +188,26 @@ async def finetune_report(state: MainAgentState) -> dict:
     except Exception as e:
         print(f"Failed to save report: {e}")
     
-    return {"report": refined_content}
+    return {"report": f"深度研究文件已保存到 {report_path.resolve()}"}
 
 
 def _extract_title_from_content(content: str) -> str:
     """从报告内容中提取标题"""
+    def sym_filter(s: str) -> str:
+        for sym in [":", "\\", "/", "*", "?", "\"", "<", ">", "|", "!", "#", "@", "$"]:
+            s = s.replace(sym, "")
+        return s
+    
     try:
         lines = content.split("\n")
         for line in lines:
             line = line.strip()
             if line and not line.startswith("#"):
                 # 第一个非空非标题行作为标题
-                return line.strip("# ").strip()
+                return sym_filter(line.strip("# ").strip())
             elif line.startswith("# "):
                 # 或者第一个一级标题
-                return line.strip("# ").strip()
+                return sym_filter(line.strip("# ").strip())
         return ""
     except Exception:
         return ""

@@ -74,9 +74,9 @@ async def deep_research_node(state: MainAgentState, config: RunnableConfig) -> D
         log_file.write_text(log_file.read_text(encoding="utf-8") + f"Deep research completed successfully\nResult length: {len(success_msg)}\n", encoding="utf-8")
         
         return {
-            "messages": [ToolMessage(
+            "messages": [HumanMessage(
                 tool_call_id=tool_call_id or "deep_research",
-                content=success_msg,
+                content="深度研究报告文件位置 / 生成信息:\n" + success_msg + "\n若成功生成，可通过相应工具访问文件获得具体内容",
             )],
         }
         
@@ -86,7 +86,7 @@ async def deep_research_node(state: MainAgentState, config: RunnableConfig) -> D
         log_file.write_text(log_file.read_text(encoding="utf-8") + f"Deep research failed with exception: {e}\nFull traceback: {traceback.format_exc()}\n", encoding="utf-8")
         
         return {
-            "messages": [ToolMessage(
+            "messages": [HumanMessage(
                 tool_call_id=tool_call_id or "deep_research",
                 content=error_msg,
             )]
