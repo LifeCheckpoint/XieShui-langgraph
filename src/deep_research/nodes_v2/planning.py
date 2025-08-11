@@ -1,0 +1,188 @@
+"""
+Deep Research Planning 节点 - 重构版本
+使用新的服务抽象层，消除重复代码
+"""
+
+from __future__ import annotations
+
+from pydantic import BaseModel, Field
+
+from src.deep_research.utils.state import MainAgentState
+from src.deep_research.services.llm_service import llm_service
+from src.deep_research.services.state_manager import state_manager
+from src.deep_research.services.config_manager import config_manager
+
+
+# 保持原有的模型定义，确保向后兼容
+class ResearchPlan(BaseModel):
+    research_status: str = Field(..., description="研究现状。例: 无，我即将开始研究（仅轮次为1时，不允许产生任何已研究幻觉）/ 我已经完成了关于…的研究，但是在…领域存在空白，并且尚未进行关于…的研究 / …")
+    research_goal: str = Field(..., description="研究目标。例: 深入探讨QML算法的广度及其未来的发展方向")
+    research_range: str = Field(..., description="研究范围。例: 我正在着手对量子机器学习（QML）的理论领域进行全面回顾，重点关注过去8到10年（2015-2025）的研究进展")
+    research_method: str = Field(..., description="研究方法。例: 我将首先从…入手，通过…，特别是针对…，来…。我计划涵盖…等。此外，我还会…。我还会收集…，最终将所有收集到的信息综合成一份全面的综述")
+
+
+class SearchQuery(BaseModel):
+    content: str = Field(..., description="要搜索的内容")
+    reason: str = Field(..., description="进行此搜索的原因")
+    max_result: int = Field(..., description="期望的最大结果数")
+
+
+class SearchQueries(BaseModel):
+    queries: list[SearchQuery]
+
+
+async def plan_research(state: MainAgentState) -> dict:
+    """
+    根据当前状态制定研究计划
+    
+    重构后的实现：
+    - 移除了200+行的重复错误处理代码
+    - 使用统一的LLM服务和状态管理
+    - 保持完全相同的业务逻辑和返回格式
+    """
+    # 使用状态管理器进行验证和数据准备
+    state_manager.validate_transition_to(state, "plan_research")
+    
+    # 自适应裁剪findings以避免token溢出
+    adapted_cycles = _adapt_cycles_for_token_limit(
+        state["research_cycles"], 
+        config_manager.research.max_token_length
+    )
+    
+    # 准备模板上下文
+    context = {
+        "topic": state["topic"],
+        "research_cycles": adapted_cycles,
+        "research_total_cycles": state.get("research_total_cycles", 5),
+        "current_cycle_index": len(state["research_cycles"]) + 1
+    }
+    
+    # 使用LLM服务进行调用（自动处理重试和错误）
+    llm_config = config_manager.get_llm_config_for_task("planning")
+    response = await llm_service.invoke_with_template(
+        "research_plan.txt",
+        context,
+        ResearchPlan,
+        llm_config
+    )
+    
+    # 使用状态管理器更新状态
+    return state_manager.update_research_plan(state, response.dict())
+
+
+async def generate_search_queries(state: MainAgentState) -> dict:
+    """
+    根据研究计划生成搜索查询
+    
+    重构后的实现：
+    - 移除了重复的错误处理逻辑
+    - 使用统一的服务进行状态管理和LLM调用
+    """
+    # 验证状态转换
+    state_manager.validate_transition_to(state, "generate_search_queries")
+    
+    # 获取当前循环的研究计划
+    current_cycle = state_manager.get_current_cycle(state)
+    
+    # 准备模板上下文
+    context = {
+        "topic": state["topic"],
+        "research_plan": current_cycle["research_plan"]
+    }
+    
+    # 使用LLM服务生成搜索查询
+    llm_config = config_manager.get_llm_config_for_task("searching")
+    response = await llm_service.invoke_with_template(
+        "search_instruction.txt",
+        context,
+        SearchQueries,
+        llm_config
+    )
+    
+    # 安全地提取搜索查询
+    if hasattr(response, 'queries'):
+        # 直接访问属性
+        search_queries = [query.model_dump() for query in response.queries]  # type: ignore
+    else:
+        # 通过字典访问
+        response_dict = response.model_dump() if hasattr(response, 'model_dump') else {}
+        queries = response_dict.get('queries', [])
+        search_queries = [q if isinstance(q, dict) else q.model_dump() for q in queries]
+    
+    return state_manager.update_search_queries(state, search_queries)
+
+
+def _adapt_cycles_for_token_limit(research_cycles: list, max_token_length: int = 128000) -> list:
+    """
+    自适应裁剪研究循环数据以避免token溢出
+    
+    从原来的重复实现中提取出来，成为独立的工具函数
+    """
+    adapted_cycles = []
+    
+    # 统计所有findings的总长度
+    total_finding_count = sum(len(cycle.get("findings", [])) for cycle in research_cycles)
+    total_finding_length = sum(
+        len(str(finding)) 
+        for cycle in research_cycles 
+        for finding in cycle.get("findings", [])
+    )
+    
+    # 如果超过限制，按比例裁剪
+    if total_finding_length > max_token_length and total_finding_count > 0:
+        max_finding_length = 100000 // total_finding_count
+        
+        for cycle in research_cycles:
+            adapted_cycle = cycle.copy()
+            findings = cycle.get("findings", [])
+            
+            if findings:
+                adapted_findings = []
+                for finding in findings:
+                    finding_str = str(finding)
+                    if len(finding_str) > max_finding_length:
+                        adapted_findings.append(finding_str[:max_finding_length] + "...")
+                    else:
+                        adapted_findings.append(finding)
+                adapted_cycle["findings"] = adapted_findings
+            
+            adapted_cycles.append(adapted_cycle)
+    else:
+        adapted_cycles = research_cycles
+    
+    return adapted_cycles
+
+
+# 为了完全向后兼容，保留原有的便捷函数接口
+async def invoke_research_plan_legacy(topic: str, research_cycles: list, total_cycles: int) -> ResearchPlan:
+    """向后兼容的研究计划生成函数"""
+    adapted_cycles = _adapt_cycles_for_token_limit(research_cycles)
+    
+    context = {
+        "topic": topic,
+        "research_cycles": adapted_cycles,
+        "research_total_cycles": total_cycles,
+        "current_cycle_index": len(research_cycles) + 1
+    }
+    
+    response = await llm_service.invoke_with_template(
+        "research_plan.txt",
+        context,
+        ResearchPlan
+    )
+    return response  # type: ignore
+
+
+async def invoke_search_queries_legacy(topic: str, research_plan: dict) -> SearchQueries:
+    """向后兼容的搜索查询生成函数"""
+    context = {
+        "topic": topic,
+        "research_plan": research_plan
+    }
+    
+    response = await llm_service.invoke_with_template(
+        "search_instruction.txt",
+        context,
+        SearchQueries
+    )
+    return response  # type: ignore

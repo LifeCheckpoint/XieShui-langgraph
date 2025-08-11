@@ -3,11 +3,12 @@ from __future__ import annotations
 from langgraph.graph import StateGraph, START, END
 
 from src.deep_research.utils.state import MainAgentState
-from src.deep_research.nodes.planning import plan_research, generate_search_queries
-from src.deep_research.nodes.searching import execute_search, filter_search_results
-from src.deep_research.nodes.reading import read_and_summarize
-from src.deep_research.nodes.routing import initialize_research, update_and_check_cycle
-from src.deep_research.nodes.writing import generate_outline, write_sections, finetune_report
+# 重构后：使用新的nodes_v2实现，确保向后兼容
+from src.deep_research.nodes_v2.planning import plan_research, generate_search_queries
+from src.deep_research.nodes_v2.searching import execute_search, filter_search_results
+from src.deep_research.nodes_v2.reading import read_and_summarize
+from src.deep_research.nodes_v2.routing import initialize_research, update_and_check_cycle
+from src.deep_research.nodes_v2.writing import generate_outline, write_sections, finetune_report
 
 # --- Build Graph ---
 
