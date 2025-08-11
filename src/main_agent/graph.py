@@ -6,16 +6,31 @@ from __future__ import annotations
 
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import StateGraph, START, END
+from typing import Literal
 
 # 配置 LLM
 from src.main_agent.llm_manager import LLMConfig, initialize_llm_manager
-initialize_llm_manager({
-    "default": LLMConfig(),
-    "summarization": LLMConfig(temperature=0.2),
-    "agent_execution": LLMConfig(temperature=0.3),
-    "tools": LLMConfig(temperature=0.3, max_tokens=4096),
-    "long_writing": LLMConfig(model_name="google/gemini-2.5-flash", temperature=0.5, max_tokens=65536, frequency_penalty=0.4),
-})
+
+testing_LLM_mode: Literal["normal", "advance"] = "advance"
+
+if testing_LLM_mode == "normal":
+    initialize_llm_manager({
+        "default": LLMConfig(),
+        "summarization": LLMConfig(temperature=0.2),
+        "agent_execution": LLMConfig(temperature=0.3),
+        "tools": LLMConfig(temperature=0.3, max_tokens=4096),
+        "long_writing": LLMConfig(model_name="google/gemini-2.5-flash", temperature=0.5, max_tokens=65536, frequency_penalty=0.4),
+    })
+elif testing_LLM_mode == "advance":
+    initialize_llm_manager({
+        "default": LLMConfig(model_name="google/gemini-2.5-pro", frequency_penalty=0.4),
+        "summarization": LLMConfig(model_name="google/gemini-2.5-flash", temperature=0.2, frequency_penalty=0.4),
+        "agent_execution": LLMConfig(model_name="google/gemini-2.5-pro", temperature=0.35, frequency_penalty=0.4),
+        "tools": LLMConfig(model_name="google/gemini-2.5-pro", temperature=0.3, max_tokens=4096, frequency_penalty=0.4),
+        "long_writing": LLMConfig(model_name="google/gemini-2.5-flash", temperature=0.5, max_tokens=65536, frequency_penalty=0.4),
+    })
+else:
+    raise ValueError(f"Unsupported testing_LLM_mode: {testing_LLM_mode}. Supported modes are 'normal' and 'advance'.")
 
 from src.main_agent.utils import (
     # state
