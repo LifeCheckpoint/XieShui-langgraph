@@ -73,7 +73,7 @@
 {{ topic }}
 
 总共进行研究轮次：{{ research_total_cycles }}
-目前研究轮次：{{ current_cycle_index }}
+目前即将进行的研究轮次(1 为首轮)：{{ current_cycle_index }}
 
 {% if research_cycles %}
 # 已有发现
