@@ -46,6 +46,7 @@ class ResearchConfig:
     
     # LLM配置
     default_llm_config: str = LLMConfigName.DEFAULT.value
+    default_long_llm_config: str = LLMConfigName.DEFAULT_MORE_TOKEN.value
     long_writing_llm_config: str = LLMConfigName.LONG_WRITING.value
     
     # 重试配置
@@ -241,7 +242,7 @@ class ConfigManager:
             "searching": self._research_config.default_llm_config,
             "reading": self._research_config.long_writing_llm_config,
             "writing": self._research_config.long_writing_llm_config,
-            "finetune": self._research_config.default_llm_config
+            "finetune": self._research_config.default_long_llm_config
         }
         
         return task_configs.get(task, self._research_config.default_llm_config)

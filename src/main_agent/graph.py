@@ -25,7 +25,7 @@ if testing_LLM_mode == "normal":
 elif testing_LLM_mode == "advance":
     initialize_llm_manager({
         "default": LLMConfig(model_name="anthropic/claude-sonnet-4"),
-        "default_moretoken": LLMConfig(model_name="anthropic/claude-sonnet-4", max_tokens=65536),
+        "default_moretoken": LLMConfig(model_name="anthropic/claude-sonnet-4", max_tokens=100000),
         "summarization": LLMConfig(model_name="google/gemini-2.5-flash", temperature=0.2, frequency_penalty=0.4),
         "agent_execution": LLMConfig(model_name="anthropic/claude-sonnet-4", temperature=0.35),
         "tools": LLMConfig(model_name="anthropic/claude-sonnet-4", temperature=0.3, max_tokens=4096),
