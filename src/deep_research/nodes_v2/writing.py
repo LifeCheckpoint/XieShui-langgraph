@@ -76,6 +76,18 @@ async def write_sections(state: MainAgentState) -> dict:
     """
     遍历生成的大纲，逐个章节或小节地撰写报告内容
     """
+    import datetime
+    from pathlib import Path
+    
+    # 创建调试日志
+    log_file = Path("src/deep_research/logs/debug_write_sections.log")
+    log_file.parent.mkdir(exist_ok=True)
+    
+    def write_log(message: str):
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with log_file.open("a", encoding="utf-8") as f:
+            f.write(f"[{timestamp}] {message}\n")
+
     # 验证状态转换
     state_manager.validate_transition_to(state, "write_sections")
     
@@ -89,38 +101,43 @@ async def write_sections(state: MainAgentState) -> dict:
     # 递归处理章节的内部函数
     async def process_section(section: dict, last_written_content: str, depth: int = 0):
         nonlocal report
-        current_section_title = section["title"]
-        
-        # 获取当前章节的引用
-        section_citations = []
-        if "cites" in section:
-            section_citations = citation_service.get_citations_for_section(
-                section["cites"], citations
+
+        try:
+            current_section_title = section["title"]
+            
+            # 获取当前章节的引用
+            section_citations = []
+            if "cites" in section:
+                section_citations = citation_service.get_citations_for_section(
+                    section["cites"], citations
+                )
+            
+            # 准备模板上下文
+            context = {
+                "current_section_title": current_section_title,
+                "last_written_content": last_written_content,
+                "cites": section_citations
+            }
+            
+            # 使用LLM服务写作章节
+            llm_config = config_manager.get_llm_config_for_task("writing")
+            section_content = await llm_service.invoke_with_template_simple(
+                "section_writing.txt",
+                context,
+                llm_config
             )
+            
+            # 添加章节标题和内容
+            header_level = "#" * (depth + 2)
+            report += f"{header_level} {current_section_title}\n\n{section_content}\n\n"
         
-        # 准备模板上下文
-        context = {
-            "current_section_title": current_section_title,
-            "last_written_content": last_written_content,
-            "cites": section_citations
-        }
-        
-        # 使用LLM服务写作章节
-        llm_config = config_manager.get_llm_config_for_task("writing")
-        section_content = await llm_service.invoke_with_template_simple(
-            "section_writing.txt",
-            context,
-            llm_config
-        )
-        
-        # 添加章节标题和内容
-        header_level = "#" * (depth + 2)
-        report += f"{header_level} {current_section_title}\n\n{section_content}\n\n"
-        
-        # 递归处理子章节
-        if "sub" in section:
-            for sub_section in section["sub"]:
-                await process_section(sub_section, report[-500:], depth + 1)
+            # 递归处理子章节
+            if "sub" in section:
+                for sub_section in section["sub"]:
+                    await process_section(sub_section, report[-500:], depth + 1)
+
+        except Exception as e:
+            write_log(f"Error processing section '{section.get('title', 'Unknown')}' at depth {depth}: {e}")
     
     # 处理所有章节
     outline = report_outline.get("outline", [])

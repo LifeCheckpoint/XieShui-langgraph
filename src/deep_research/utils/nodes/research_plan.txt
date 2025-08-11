@@ -77,6 +77,7 @@
 
 {% if research_cycles %}
 # 已有发现
+（若为空，则该轮尚未进行研究）
 
 {% for cycle in research_cycles %}
 第 {{ cycle.cycle_count }} 轮研究已完成搜索:

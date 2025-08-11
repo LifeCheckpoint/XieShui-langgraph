@@ -34,11 +34,6 @@ class SearchQueries(BaseModel):
 async def plan_research(state: MainAgentState) -> dict:
     """
     根据当前状态制定研究计划
-    
-    重构后的实现：
-    - 移除了200+行的重复错误处理代码
-    - 使用统一的LLM服务和状态管理
-    - 保持完全相同的业务逻辑和返回格式
     """
     # 添加新轮次
     state_manager.add_new_cycle(state)
@@ -56,8 +51,8 @@ async def plan_research(state: MainAgentState) -> dict:
     context = {
         "topic": state["topic"],
         "research_cycles": adapted_cycles,
-        "research_total_cycles": state.get("research_total_cycles", 5),
-        "current_cycle_index": len(state["research_cycles"]) + 1
+        "research_total_cycles": state.get("research_total_cycles", 3),
+        "current_cycle_index": state_manager.get_cycle_count(state)
     }
     
     # 使用LLM服务进行调用（自动处理重试和错误）
@@ -77,10 +72,6 @@ async def plan_research(state: MainAgentState) -> dict:
 async def generate_search_queries(state: MainAgentState) -> dict:
     """
     根据研究计划生成搜索查询
-    
-    重构后的实现：
-    - 移除了重复的错误处理逻辑
-    - 使用统一的服务进行状态管理和LLM调用
     """
     import datetime
     from pathlib import Path
@@ -151,9 +142,6 @@ async def generate_search_queries(state: MainAgentState) -> dict:
     
     # 更新状态
     result = state_manager.update_search_queries(state, search_queries)
-    write_log(f"状态更新结果keys: {list(result.keys())}")
-    write_log(f"更新后的research_cycles长度: {state_manager.get_cycle_count(state)}")
-    
     if result.get('research_cycles'):
         updated_cycle = result['research_cycles'][-1]
         write_log(f"更新后当前循环的search_queries: {updated_cycle.get('search_queries', 'None')}")
