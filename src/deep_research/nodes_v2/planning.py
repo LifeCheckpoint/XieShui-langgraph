@@ -40,6 +40,9 @@ async def plan_research(state: MainAgentState) -> dict:
     - 使用统一的LLM服务和状态管理
     - 保持完全相同的业务逻辑和返回格式
     """
+    # 添加新轮次
+    state_manager.add_new_cycle(state)
+
     # 使用状态管理器进行验证和数据准备
     state_manager.validate_transition_to(state, "plan_research")
     
@@ -149,7 +152,7 @@ async def generate_search_queries(state: MainAgentState) -> dict:
     # 更新状态
     result = state_manager.update_search_queries(state, search_queries)
     write_log(f"状态更新结果keys: {list(result.keys())}")
-    write_log(f"更新后的research_cycles长度: {len(result.get('research_cycles', []))}")
+    write_log(f"更新后的research_cycles长度: {state_manager.get_cycle_count(state)}")
     
     if result.get('research_cycles'):
         updated_cycle = result['research_cycles'][-1]
