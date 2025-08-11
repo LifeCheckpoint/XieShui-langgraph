@@ -49,9 +49,9 @@ class LLMManager:
             model=config.model_name,
             temperature=config.temperature,
             base_url=config.base_url,
-            api_key=api_key,
+            api_key=api_key, # type: ignore
             max_retries=config.max_retries,
-            max_tokens=config.max_tokens,
+            max_completion_tokens=config.max_tokens,
             frequency_penalty=config.frequency_penalty,
         )
         return llm
