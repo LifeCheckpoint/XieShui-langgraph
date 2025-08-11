@@ -23,14 +23,41 @@ class FilteredURLs(BaseModel):
 async def execute_search(state: MainAgentState) -> dict:
     """
     执行搜索查询
-    
-    重构后的实现：
-    - 保持原有的业务逻辑完全不变
-    - 使用配置管理器获取搜索参数
-    - 使用状态管理器进行状态验证和更新
     """
+    import datetime
+    from pathlib import Path
+    
+    # 创建调试日志
+    log_file = Path("src/deep_research/logs/debug_execute_search.log")
+    log_file.parent.mkdir(exist_ok=True)
+    
+    def write_log(message: str):
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with log_file.open("a", encoding="utf-8") as f:
+            f.write(f"[{timestamp}] {message}\n")
+    
+    write_log("=== execute_search 开始 ===")
+    write_log(f"输入状态keys: {list(state.keys())}")
+    write_log(f"topic: {state.get('topic', 'None')}")
+    write_log(f"research_cycles长度: {len(state.get('research_cycles', []))}")
+    
+    if state.get('research_cycles'):
+        current_cycle = state['research_cycles'][-1]
+        write_log(f"当前循环keys: {list(current_cycle.keys())}")
+        write_log(f"当前循环search_queries: {current_cycle.get('search_queries', 'None')}")
+        write_log(f"search_queries长度: {len(current_cycle.get('search_queries', []))}")
+        if current_cycle.get('search_queries'):
+            write_log(f"第一个查询: {current_cycle['search_queries'][0]}")
+    else:
+        write_log("没有研究循环!")
+    
     # 验证状态转换
-    state_manager.validate_transition_to(state, "execute_search")
+    try:
+        state_manager.validate_transition_to(state, "execute_search")
+        write_log("状态转换验证通过")
+    except Exception as e:
+        write_log(f"状态转换验证失败: {e}")
+        raise
     
     # 获取当前循环和搜索配置
     current_cycle = state_manager.get_current_cycle(state)

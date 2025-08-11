@@ -67,7 +67,8 @@ async def plan_research(state: MainAgentState) -> dict:
     )
     
     # 使用状态管理器更新状态
-    return state_manager.update_research_plan(state, response.dict())
+    plan_data = response.model_dump()
+    return state_manager.update_research_plan(state, plan_data)
 
 
 async def generate_search_queries(state: MainAgentState) -> dict:
@@ -78,17 +79,38 @@ async def generate_search_queries(state: MainAgentState) -> dict:
     - 移除了重复的错误处理逻辑
     - 使用统一的服务进行状态管理和LLM调用
     """
+    import datetime
+    from pathlib import Path
+    
+    # 创建调试日志
+    log_file = Path("src/deep_research/logs/debug_generate_search_queries.log")
+    log_file.parent.mkdir(exist_ok=True)
+    
+    def write_log(message: str):
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with log_file.open("a", encoding="utf-8") as f:
+            f.write(f"[{timestamp}] {message}\n")
+    
+    write_log("=== generate_search_queries 开始 ===")
+    write_log(f"输入状态keys: {list(state.keys())}")
+    write_log(f"topic: {state.get('topic', 'None')}")
+    write_log(f"research_cycles长度: {len(state.get('research_cycles', []))}")
+    
     # 验证状态转换
     state_manager.validate_transition_to(state, "generate_search_queries")
+    write_log("状态转换验证通过")
     
     # 获取当前循环的研究计划
     current_cycle = state_manager.get_current_cycle(state)
+    write_log(f"当前循环keys: {list(current_cycle.keys())}")
+    write_log(f"研究计划: {current_cycle.get('research_plan', 'None')}")
     
     # 准备模板上下文
     context = {
         "topic": state["topic"],
         "research_plan": current_cycle["research_plan"]
     }
+    write_log(f"模板上下文: {context}")
     
     # 使用LLM服务生成搜索查询
     llm_config = config_manager.get_llm_config_for_task("searching")
@@ -98,18 +120,35 @@ async def generate_search_queries(state: MainAgentState) -> dict:
         SearchQueries,
         llm_config
     )
+    write_log(f"LLM响应类型: {type(response)}")
+    write_log(f"LLM响应hasattr queries: {hasattr(response, 'queries')}")
     
     # 安全地提取搜索查询
-    if hasattr(response, 'queries'):
+    if hasattr(response, 'queries') and getattr(response, 'queries', None):
         # 直接访问属性
-        search_queries = [query.model_dump() for query in response.queries]  # type: ignore
+        search_queries = [query.model_dump() for query in getattr(response, 'queries', [])]  # type: ignore
+        write_log(f"提取查询数量(直接访问): {len(search_queries)}")
     else:
         # 通过字典访问
         response_dict = response.model_dump() if hasattr(response, 'model_dump') else {}
+        write_log(f"响应字典内容: {response_dict}")
         queries = response_dict.get('queries', [])
         search_queries = [q if isinstance(q, dict) else q.model_dump() for q in queries]
+        write_log(f"提取查询数量(字典访问): {len(search_queries)}")
     
-    return state_manager.update_search_queries(state, search_queries)
+    write_log(f"search_queries: {search_queries}")
+    
+    # 更新状态
+    result = state_manager.update_search_queries(state, search_queries)
+    write_log(f"状态更新结果keys: {list(result.keys())}")
+    write_log(f"更新后的research_cycles长度: {len(result.get('research_cycles', []))}")
+    
+    if result.get('research_cycles'):
+        updated_cycle = result['research_cycles'][-1]
+        write_log(f"更新后当前循环的search_queries: {updated_cycle.get('search_queries', 'None')}")
+    
+    write_log("=== generate_search_queries 结束 ===")
+    return result
 
 
 def _adapt_cycles_for_token_limit(research_cycles: list, max_token_length: int = 128000) -> list:

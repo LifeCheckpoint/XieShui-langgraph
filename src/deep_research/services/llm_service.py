@@ -17,6 +17,17 @@ from src.deep_research.core.errors import LLMInvokeError, PromptTemplateError
 from src.deep_research.core.paths import get_prompt_path, get_log_path
 from src.main_agent.llm_manager import llm_manager
 
+import datetime
+from pathlib import Path
+
+# 创建调试日志
+log_file = Path("src/deep_research/logs/debug_llm_service.log")
+log_file.parent.mkdir(exist_ok=True)
+
+def write_log(message: str):
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with log_file.open("a", encoding="utf-8") as f:
+        f.write(f"[{timestamp}] {message}\n")
 
 class LLMService:
     """统一的LLM调用服务"""
@@ -44,16 +55,14 @@ class LLMService:
         """
         try:
             llm = llm_manager.get_llm(config_name=config_name).with_structured_output(model_class)
-            response = await llm.ainvoke([HumanMessage(content=prompt)])
+            response: BaseModel = await llm.ainvoke([HumanMessage(content=prompt)]) # type: ignore
+            
             # 确保返回正确的模型实例
-            if isinstance(response, model_class):
-                return response
-            elif isinstance(response, dict):
-                return model_class(**response)
-            else:
-                # 尝试转换为字典再创建模型
-                response_dict = response.model_dump() if hasattr(response, 'model_dump') else {}
-                return model_class(**response_dict)
+            write_log(f"-------- LLM Service 调用成功 --------")
+            write_log(f"期望的模型类: {model_class}")
+            write_log(f"LLM响应内容: {response}")
+            write_log(f"响应类型: {type(response)}")
+            return response
         except Exception as e:
             raise LLMInvokeError(f"Structured invoke failed: {e}", 1, e)
     

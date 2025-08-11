@@ -156,7 +156,7 @@ class ResearchStateManager:
         Returns:
             Dict: 包含更新后的research_cycles的字典
         """
-        return self.update_current_cycle(state, research_plan=research_plan)
+        return self.update_current_cycle(state, **{"research_plan": research_plan})
     
     def update_search_queries(
         self,
@@ -173,7 +173,7 @@ class ResearchStateManager:
         Returns:
             Dict: 包含更新后的research_cycles的字典
         """
-        return self.update_current_cycle(state, search_queries=search_queries)
+        return self.update_current_cycle(state, **{"search_queries": search_queries})
     
     def update_search_results(
         self,
@@ -190,7 +190,7 @@ class ResearchStateManager:
         Returns:
             Dict: 包含更新后的research_cycles的字典
         """
-        return self.update_current_cycle(state, search_results=search_results)
+        return self.update_current_cycle(state, **{"search_results": search_results})
     
     def update_filtered_urls(
         self,
@@ -211,8 +211,7 @@ class ResearchStateManager:
         """
         return self.update_current_cycle(
             state,
-            reading_list=reading_list,
-            skimming_list=skimming_list
+            **{"reading_list": reading_list, "skimming_list": skimming_list}
         )
     
     def update_findings(

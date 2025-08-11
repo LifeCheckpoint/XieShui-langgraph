@@ -115,8 +115,8 @@ async def _log_error(func_name: str, attempt: int, error: Exception, *args, **kw
         log_entry = f"Function {func_name} failed on attempt {attempt}\n"
         log_entry += f"Error: {error}\n"
         log_entry += f"Error type: {type(error).__name__}\n"
-        log_entry += f"Args: {str(args)[:200]}...\n"
-        log_entry += f"Kwargs: {str(kwargs)[:200]}...\n\n"
+        log_entry += f"Args: {str(args)}...\n"
+        log_entry += f"Kwargs: {str(kwargs)}...\n\n"
         
         with open(log_path, "a", encoding="utf-8") as f:
             f.write(log_entry)
