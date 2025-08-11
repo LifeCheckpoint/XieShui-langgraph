@@ -94,7 +94,7 @@ async def generate_search_queries(state: MainAgentState) -> dict:
     write_log("=== generate_search_queries 开始 ===")
     write_log(f"输入状态keys: {list(state.keys())}")
     write_log(f"topic: {state.get('topic', 'None')}")
-    write_log(f"research_cycles长度: {len(state.get('research_cycles', []))}")
+    write_log(f"当前research_cycles长度: {len(state.get('research_cycles', []))}")
     
     # 验证状态转换
     state_manager.validate_transition_to(state, "generate_search_queries")
@@ -114,14 +114,22 @@ async def generate_search_queries(state: MainAgentState) -> dict:
     
     # 使用LLM服务生成搜索查询
     llm_config = config_manager.get_llm_config_for_task("searching")
-    response = await llm_service.invoke_with_template(
+    response_text: str = await llm_service.invoke_with_template_simple(
         "search_instruction.txt",
         context,
-        SearchQueries,
         llm_config
     )
-    write_log(f"LLM响应类型: {type(response)}")
-    write_log(f"LLM响应hasattr queries: {hasattr(response, 'queries')}")
+    write_log(f"LLM响应类型: {type(response_text)}")
+    write_log(f"LLM响应: {str(response_text)}")
+
+    # 反序列化 str 到 SearchQueries
+    import json
+    obj_search_queries_data = json.loads(response_text)
+    distributed_q: list = []
+    for query in obj_search_queries_data["queries"]:
+        distributed_q.append(SearchQuery(**query))
+    
+    response = SearchQueries(queries=distributed_q)
     
     # 安全地提取搜索查询
     if hasattr(response, 'queries') and getattr(response, 'queries', None):
