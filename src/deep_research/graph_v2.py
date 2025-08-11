@@ -54,21 +54,7 @@ def create_research_graph() -> StateGraph:
     
     return builder
 
-
-def create_research_graph_with_checkpointer():
-    """创建带有检查点的研究图"""
-    builder = create_research_graph()
-    return builder.compile(checkpointer=True)
-
-
-def create_simple_research_graph():
-    """创建简单的研究图（不带检查点）"""
-    builder = create_research_graph()
-    return builder.compile()
-
-
-# 为了向后兼容，保留原有的builder导出
 builder = create_research_graph()
 graph = builder.compile(checkpointer=True)
 
-__all__ = ["builder", "graph", "create_research_graph", "create_research_graph_with_checkpointer"]
+__all__ = ["graph"]

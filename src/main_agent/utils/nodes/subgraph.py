@@ -7,7 +7,7 @@ from langchain_core.messages import AIMessage, HumanMessage
 from typing import Any, Dict
 
 from src.main_agent.utils.state import MainAgentState
-from src.deep_research.graph import graph as deep_research_graph
+from src.deep_research.graph_v2 import graph as deep_research_graph
 from src.graph_manager import graph_manager_builder
 
 async def deep_research_node(state: MainAgentState, config: RunnableConfig) -> Dict[str, Any]:

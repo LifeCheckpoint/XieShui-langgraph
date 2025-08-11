@@ -25,11 +25,6 @@ class Outline(BaseModel):
 async def generate_outline(state: MainAgentState) -> dict:
     """
     根据研究主题、搜索查询和资料摘要，生成学术报告大纲
-    
-    重构后的实现：
-    - 使用引用管理服务统一处理引用映射
-    - 移除了100+行的重复错误处理代码
-    - 保持完全相同的大纲生成逻辑和格式
     """
     # 验证状态转换
     state_manager.validate_transition_to(state, "generate_outline")
@@ -80,11 +75,6 @@ async def generate_outline(state: MainAgentState) -> dict:
 async def write_sections(state: MainAgentState) -> dict:
     """
     遍历生成的大纲，逐个章节或小节地撰写报告内容
-    
-    重构后的实现：
-    - 使用引用管理服务处理章节引用
-    - 保持完全相同的递归写作逻辑
-    - 使用配置管理器控制章节长度
     """
     # 验证状态转换
     state_manager.validate_transition_to(state, "write_sections")
@@ -147,11 +137,6 @@ async def write_sections(state: MainAgentState) -> dict:
 async def finetune_report(state: MainAgentState) -> dict:
     """
     对生成的报告初稿进行整体调优
-    
-    重构后的实现：
-    - 使用路径工具管理输出文件
-    - 保持完全相同的调优逻辑
-    - 自动生成有效文件名并保存
     """
     # 验证状态转换
     state_manager.validate_transition_to(state, "finetune_report")
@@ -204,93 +189,3 @@ def _extract_title_from_content(content: str) -> str:
         return ""
     except Exception:
         return ""
-
-
-def _validate_outline_structure(outline: dict) -> bool:
-    """验证大纲结构的有效性"""
-    required_fields = ["title", "abstract", "outline"]
-    
-    for field in required_fields:
-        if field not in outline:
-            return False
-    
-    if not isinstance(outline["outline"], list):
-        return False
-    
-    return True
-
-
-def _validate_citations_consistency(report: str, citations: dict) -> tuple[bool, list[str]]:
-    """验证报告中引用的一致性"""
-    return citation_service.validate_citation_references(report, citations)
-
-
-def _calculate_writing_metrics(report: str) -> dict:
-    """计算写作指标"""
-    lines = report.split('\n')
-    words = len(report.split())
-    characters = len(report)
-    
-    # 统计章节数量
-    sections = sum(1 for line in lines if line.strip().startswith('#'))
-    
-    # 统计引用数量
-    citations = len(citation_service.extract_citations_from_text(report))
-    
-    return {
-        "word_count": words,
-        "character_count": characters,
-        "line_count": len(lines),
-        "section_count": sections,
-        "citation_count": citations
-    }
-
-
-# 为了向后兼容，提供原有接口的包装函数
-async def generate_outline_legacy(
-    topic: str, 
-    relative_searching: list, 
-    cite_llm_list: list
-) -> Outline:
-    """向后兼容的大纲生成函数"""
-    context = {
-        "subject": topic,
-        "relative_searching": relative_searching,
-        "cites": cite_llm_list
-    }
-    
-    response = await llm_service.invoke_with_template(
-        "outline_writing.txt",
-        context,
-        Outline
-    )
-    
-    return response  # type: ignore
-
-
-async def write_section_legacy(
-    section_title: str,
-    last_content: str,
-    citations: list
-) -> str:
-    """向后兼容的章节写作函数"""
-    context = {
-        "current_section_title": section_title,
-        "last_written_content": last_content,
-        "cites": citations
-    }
-    
-    return await llm_service.invoke_with_template_simple(
-        "section_writing.txt",
-        context
-    )
-
-
-async def finetune_report_legacy(report_content: str) -> str:
-    """向后兼容的报告调优函数"""
-    context = {"article": report_content}
-    
-    return await llm_service.invoke_with_template_simple(
-        "finetune.txt",
-        context
-    )

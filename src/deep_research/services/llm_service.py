@@ -59,6 +59,7 @@ class LLMService:
             
             # 确保返回正确的模型实例
             write_log(f"-------- LLM Service 调用成功 --------")
+            write_log(f"发送内容: {prompt}")
             write_log(f"期望的模型类: {model_class}")
             write_log(f"LLM响应内容: {response}")
             write_log(f"响应类型: {type(response)}")

@@ -87,6 +87,13 @@ class ResearchStateManager:
         """更新筛选URL列表"""
         return self.update_current_cycle(state, reading_list=reading_list, skimming_list=skimming_list)
     
+    def get_all_search_queries(self, state: MainAgentState) -> List:
+        """从 state 获取所有搜索记录"""
+        all_queries = []
+        for cycle in state.get("research_cycles", []):
+            all_queries.extend(cycle.get("search_queries", []))
+        return all_queries
+    
     def update_findings(self, state: MainAgentState, findings: List[Dict[str, Any]], summary_raw_content: Any = None) -> Dict[str, Any]:
         """更新研究发现"""
         updates = {"findings": findings}
