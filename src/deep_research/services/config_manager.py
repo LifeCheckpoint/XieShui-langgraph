@@ -36,7 +36,7 @@ class ResearchConfig:
     # 阅读参数
     max_reading_list: int = 5
     max_skimming_list: int = 10
-    content_max_length: int = 120000
+    content_max_length: int = 80000
     
     # 写作参数
     section_max_words: int = 800
