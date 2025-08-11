@@ -15,7 +15,6 @@
 
 按照标准 Json 格式输出，包含 `reading_list` 和 `skimming_list`、`ignore_list` 三键，不要附加任何额外内容，不要包含“```json”等标记，例如：
 
-```json
 {
     "reading_list": [
         "https://arxiv.org/pdf/2402.05120",
@@ -29,7 +28,8 @@
         "https://ua18.com/article114514"
     ]
 }
-```
+
+再次提醒，**不要包含任何“```json”等标记**
 
 {% endraw %}
 ---
