@@ -26,6 +26,7 @@ async def deep_research_node(state: MainAgentState, config: RunnableConfig) -> D
             break
     
     if ai_message and ai_message.tool_calls:
+        tool_call_id = None
         for tool_call in ai_message.tool_calls:
             
             # 检查是否有工具调用
@@ -36,6 +37,7 @@ async def deep_research_node(state: MainAgentState, config: RunnableConfig) -> D
                         "subject": tool_call["args"].get("subject", ""),
                         "recursion": tool_call["args"].get("recursion", 3)
                     }
+                    tool_call_id = tool_call["id"]
 
     if param:
         # 有参数，开始执行
@@ -49,7 +51,7 @@ async def deep_research_node(state: MainAgentState, config: RunnableConfig) -> D
             error_msg = "深度研究执行过程中发生异常: " + str(e) + "\n" + traceback.format_exc()
             return {
                 "messages": [ToolMessage(
-                    tool_call_id="deep_research",
+                    tool_call_id=tool_call_id or "deep_research",
                     content=error_msg,
                 )]
             }
@@ -57,7 +59,7 @@ async def deep_research_node(state: MainAgentState, config: RunnableConfig) -> D
         # 没有参数，返回警告消息
         return {
             "messages": [ToolMessage(
-                tool_call_id="deep_research",
+                tool_call_id=tool_call_id or "deep_research",
                 content="没有提供研究主题或轮次，请先使用 `deep_research` 工具调用进行设置",
             )]
         }
@@ -65,7 +67,7 @@ async def deep_research_node(state: MainAgentState, config: RunnableConfig) -> D
     # 返回结果
     return {
         "messages": [ToolMessage(
-            tool_call_id="deep_research",
+            tool_call_id=tool_call_id or "deep_research",
             content=result.get("report", "深度研究报告生成失败，请检查日志获取更多信息"),
         )],
     }
@@ -87,11 +89,13 @@ async def graph_manager_node(state: MainAgentState, config: RunnableConfig) -> D
             break
     
     if ai_message and ai_message.tool_calls:
+        tool_call_id = None
         for tool_call in ai_message.tool_calls:
             if tool_call["name"] == "graph_manager":
                 param = {
                     "task_book": tool_call["args"].get("task_book", ""),
                 }
+                tool_call_id = tool_call["id"]
                 break
 
     if param:
@@ -101,19 +105,23 @@ async def graph_manager_node(state: MainAgentState, config: RunnableConfig) -> D
                 "messages": [], # graph_manager 是一个独立的 Agent，不需要传递消息历史
                 "task_book": param["task_book"],
             }, {"recursion_limit": 100}) # type: ignore
-            # 获取 graph_manager 的最终结果
-            final_message = result["messages"][-1]
-            content = final_message.content
+            
+            # 直接返回子图的消息，其中已经包含了正确的 ToolMessage
+            return {"messages": result["messages"]}
+            
         except Exception as e:
             content = "知识图谱管理执行过程中发生异常: " + str(e) + "\n" + traceback.format_exc()
+            return {
+                "messages": [ToolMessage(
+                    tool_call_id=tool_call_id or "graph_manager",
+                    content=content,
+                )],
+            }
     else:
         # 没有参数，返回警告消息
-        content = "没有提供任务书，请先使用 `graph_manager` 工具调用进行设置"
-    
-    # 返回结果
-    return {
-        "messages": [ToolMessage(
-            tool_call_id="graph_manager",
-            content=content,
-        )],
-    }
+        return {
+            "messages": [ToolMessage(
+                tool_call_id=tool_call_id or "graph_manager",
+                content="没有提供任务书，请先使用 `graph_manager` 工具调用进行设置",
+            )],
+        }
