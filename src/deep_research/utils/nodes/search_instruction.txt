@@ -17,14 +17,18 @@
 
 # 输出要求
 
-按照标准Json格式输出，不要附加任何额外内容，例如
+按照标准Json格式输出，不要附加任何额外内容，**不要包含“```json”等标记**。标准格式例如
 
-[
-    {"content": "use the LangGraph SDK create agent", "reason": "了解LangGraph SDK创建Agent的最佳实践与方法，以形成对构建智能体方法论的初步了解", "max_result": 6},
-    {"content": "LangGraph Platform UI configure", "reason": "了解如何配置LangGraph平台的UI，藉以研究LangGraph的UI入参与基本使用方式", "max_result": 3},
-    {"content": "arxiv llm agent", "reason": "在Arxiv平台上搜索有关LLM Agent的论文，以了解当前前沿的学术进展或经典的理论体系", "max_result": 12},
-    ...
-]
+{
+    "queries": [
+        {"content": "use the LangGraph SDK create agent", "reason": "了解LangGraph SDK创建Agent的最佳实践与方法，以形成对构建智能体方法论的初步了解", "max_result": 6},
+        {"content": "LangGraph Platform UI configure", "reason": "了解如何配置LangGraph平台的UI，藉以研究LangGraph的UI入参与基本使用方式", "max_result": 3},
+        {"content": "arxiv llm agent", "reason": "在Arxiv平台上搜索有关LLM Agent的论文，以了解当前前沿的学术进展或经典的理论体系", "max_result": 12},
+        ...
+    ]
+}
+
+再次提醒，**不要包含任何“```json”等标记**
 
 {% endraw %}
 ---

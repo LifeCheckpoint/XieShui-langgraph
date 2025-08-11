@@ -25,7 +25,7 @@ class MainAgentState(TypedDict):
     topic: str
     research_summary: str
     research_cycles: List[ResearchCycleState]
-    research_total_cycles: int = 5
+    research_total_cycles: int
     report_outline: dict
     report: str
     citations: dict
