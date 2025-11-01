@@ -6,7 +6,7 @@ class SearchFileSchema(BaseModel):
     """
     强大的文件搜索工具，基于everything的搜索功能
     """
-    query_string: str = Field(description="搜索关键词或模式，例如 '*.txt' 或 'report'。请注意，在不确定具体文件吗的情况下，尽可能使用通配符拓展搜索，例如 must \"some str\" !notHas aaaor|bbbor ")
+    query_string: str = Field(description="搜索关键词或模式，例如 '*.txt' 或 'report'。请注意，在不确定具体文件吗的情况下，尽可能使用通配符拓展搜索，例如 must \"some str\" !notHas aaaor|bbbor 注意严格按照通配符标准编写，不要使用其它未提到的符号，例如OR或者AND，它们会导致搜索失败。")
     match_case: bool = Field(default=False, description="是否区分大小写。")
     sort_type: str = Field(default="NAME_ASCENDING", description="搜索结果的排序方式，可以为NAME、PATH、SIZE、EXTENSION、DATE_CREATED、DATE_MODIFIED、ATTRIBUTES、DATE_RECENTLY_CHANGED、DATE_ACCESSED等属性的升降序（ASCENDING、DESCENDING）。例如：NAME_ASCENDING、SIZE_DESCENDING等。")
     max_results: int = Field(default=20, description="返回的最大结果数量。")
