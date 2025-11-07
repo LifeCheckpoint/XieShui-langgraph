@@ -55,7 +55,15 @@ class LLMService:
         """
         try:
             llm = llm_manager.get_llm(config_name=config_name).with_structured_output(model_class)
-            response: BaseModel = await llm.ainvoke([HumanMessage(content=prompt)]) # type: ignore
+            res0 = await llm.ainvoke([HumanMessage(content=prompt)])
+            write_log(f"-------- LLM Service 结构化调用返回 --------")
+            write_log(f"发送内容: {prompt.replace('\n', '\\n')}")
+            write_log(f"期望的模型类: {model_class}")
+            write_log(f"LLM原始响应内容: {res0}")
+            if isinstance(res0, dict):
+                response = model_class(**res0)
+            elif isinstance(res0, model_class):
+                response: BaseModel = res0 
             
             # 确保返回正确的模型实例
             write_log(f"-------- LLM Service 调用成功 --------")
