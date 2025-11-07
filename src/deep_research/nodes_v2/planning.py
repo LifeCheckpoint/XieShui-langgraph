@@ -118,7 +118,44 @@ async def generate_search_queries(state: MainAgentState) -> dict:
 
     # 反序列化 str 到 SearchQueries
     import json
-    obj_search_queries_data = json.loads(response_text)
+    
+    # === 诊断日志：验证LLM响应问题 ===
+    write_log("=== 诊断：LLM响应内容分析 ===")
+    write_log(f"响应文本长度: {len(response_text) if response_text else 0}")
+    write_log(f"响应是否为空: {response_text == '' if response_text is not None else 'None'}")
+    write_log(f"响应前100个字符: {repr(response_text[:100]) if response_text else 'N/A'}")
+    write_log(f"响应最后100个字符: {repr(response_text[-100:]) if response_text and len(response_text) > 100 else 'N/A'}")
+    
+    # 检查是否包含常见的非JSON标记
+    if response_text:
+        contains_json_markers = "```json" in response_text or "```" in response_text
+        write_log(f"包含JSON标记: {contains_json_markers}")
+        if contains_json_markers:
+            write_log("检测到markdown JSON标记，这可能是问题根源")
+    
+    # 尝试解析JSON前先验证
+    if not response_text or not response_text.strip():
+        write_log("错误：LLM响应为空或只含空白字符")
+        raise ValueError("LLM返回了空响应，无法解析JSON")
+    
+    # 尝试清理响应文本（移除可能的markdown标记）
+    cleaned_response = response_text.strip()
+    if cleaned_response.startswith("```json"):
+        cleaned_response = cleaned_response[7:]  # 移除开始标记
+    if cleaned_response.endswith("```"):
+        cleaned_response = cleaned_response[:-3]  # 移除结束标记
+    cleaned_response = cleaned_response.strip()
+    
+    write_log(f"清理后的响应长度: {len(cleaned_response)}")
+    write_log(f"清理后的响应前50字符: {repr(cleaned_response[:50])}")
+    
+    try:
+        obj_search_queries_data = json.loads(cleaned_response)
+        write_log("JSON解析成功")
+    except json.JSONDecodeError as e:
+        write_log(f"JSON解析失败: {e}")
+        write_log(f"尝试解析的文本: {repr(cleaned_response[:200])}")
+        raise
     distributed_q: list = []
     for query in obj_search_queries_data["queries"]:
         distributed_q.append(SearchQuery(**query))

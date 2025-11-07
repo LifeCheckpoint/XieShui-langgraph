@@ -18,6 +18,7 @@ class LLMConfigName(str, Enum):
     DEFAULT = "default"
     LONG_WRITING = "long_writing"
     DEFAULT_MORE_TOKEN = "default_moretoken"
+    RE = "re"
 
 
 @dataclass
@@ -48,6 +49,7 @@ class ResearchConfig:
     default_llm_config: str = LLMConfigName.DEFAULT.value
     default_long_llm_config: str = LLMConfigName.DEFAULT_MORE_TOKEN.value
     long_writing_llm_config: str = LLMConfigName.LONG_WRITING.value
+    re_llm_config: str = LLMConfigName.RE.value
     
     # 重试配置
     max_retry_attempts: int = 3
@@ -238,7 +240,7 @@ class ConfigManager:
             str: LLM配置名称
         """
         task_configs = {
-            "planning": self._research_config.default_llm_config,
+            "planning": self._research_config.re_llm_config,
             "searching": self._research_config.default_llm_config,
             "reading": self._research_config.long_writing_llm_config,
             "writing": self._research_config.long_writing_llm_config,
